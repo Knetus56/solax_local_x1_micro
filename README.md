@@ -71,7 +71,7 @@ service: solax_local.refresh_all
 ### Via HACS (recommended)
 
 **Direct HACS link**:
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/Knetus56/solax_local&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/webpatrick/solax_local&category=integration)
 
 Or manually:
 1. Open Home Assistant
