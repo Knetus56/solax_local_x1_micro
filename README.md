@@ -1,5 +1,8 @@
 # SolaX Local - Home Assistant Integration
 
+A Fork from: 
+- https://github.com/Knetus56/solax_local
+
 A [Home Assistant](https://www.home-assistant.io/) integration to control and monitor your **SolaX** inverter locally over HTTP.
 
 ## 🌟 Features
