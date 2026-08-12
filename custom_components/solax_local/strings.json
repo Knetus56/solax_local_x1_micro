@@ -3,16 +3,16 @@
   "config": {
     "step": {
       "user": {
-        "title": "Configurer SolaX Local",
-        "description": "Ajoutez un onduleur SolaX local.",
+        "title": "Set up SolaX Local",
+        "description": "Add a local SolaX inverter.",
         "data": {
-          "host": "Hôte",
-          "inverter_type": "Type d'onduleur",
-          "serial": "Numéro de série",
-          "scan_interval": "Intervalle de scan (secondes)"
+          "host": "Host",
+          "inverter_type": "Inverter type",
+          "serial": "Serial number",
+          "scan_interval": "Scan interval (seconds)"
         },
-        "error": {
-          "invalid_serial": "Numéro de série invalide. Il doit être alphanumérique (5-21 caractères)."
+        "errors": {
+          "invalid_serial": "Invalid serial number. It must be alphanumeric (5-21 characters)."
         }
       }
     }
@@ -20,21 +20,21 @@
   "options": {},
   "entity": {
     "sensor": {
-      "mptt1": "Puissance MPPT 1",
-      "mptt2": "Puissance MPPT 2",
-      "mptt_total": "Puissance totale",
-      "prod_auj": "Production du jour",
-      "prod_total": "Production totale",
-      "temp": "Température",
+      "mptt1": "MPPT Power 1",
+      "mptt2": "MPPT Power 2",
+      "mptt_total": "Total power",
+      "prod_auj": "Daily production",
+      "prod_total": "Total production",
+      "temp": "Temperature",
       "mode": "Mode",
       "ip": "IP",
-      "num_inverter": "Numéro de série"
+      "num_inverter": "Serial number"
     },
     "binary_sensor": {
-      "online": "En ligne"
+      "online": "Online"
     },
     "switch": {
-      "switch": "État"
+      "switch": "State"
     }
   },
   "device_automation": {},

@@ -1,0 +1,53 @@
+{
+  "title": "SolaX Local",
+  "config": {
+    "step": {
+      "user": {
+        "title": "SolaX Local instellen",
+        "description": "Voeg een lokale SolaX-omvormer toe.",
+        "data": {
+          "host": "Host",
+          "inverter_type": "Type omvormer",
+          "serial": "Serienummer",
+          "scan_interval": "Scaninterval (seconden)"
+        },
+        "errors": {
+          "invalid_serial": "Ongeldig serienummer. Het moet alfanumeriek zijn (5-21 tekens)."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "mppt1_puissance": "MPPT 1 vermogen",
+      "mppt1_voltage": "MPPT 1 spanning",
+      "mppt1_intensite": "MPPT 1 stroom",
+      "mppt2_puissance": "MPPT 2 vermogen",
+      "mppt2_voltage": "MPPT 2 spanning",
+      "mppt2_intensite": "MPPT 2 stroom",
+      "inverter_voltage": "Omvormer spanning",
+      "inverter_intensite": "Omvormer stroom",
+      "inverter_puissance": "Omvormer vermogen",
+      "inverter_freq": "Omvormer frequentie",
+      "prod_auj": "Vandag productie",
+      "prod_total": "Totale productie",
+      "temp": "Temperatuur",
+      "mode": "Modus",
+      "ip": "IP",
+      "num_inverter": "Serienummer",
+      "last_update": "Laatste update"
+    },
+    "binary_sensor": {
+      "online": "Online"
+    },
+    "switch": {
+      "switch": "Status"
+    }
+  },
+  "services": {
+    "refresh_all": {
+      "name": "Alle omvormers vernieuwen",
+      "description": "Forceer een onmiddellijke update van alle SolaX-omvormers"
+    }
+  }
+}

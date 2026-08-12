@@ -1,147 +1,144 @@
-# SolaX Local - Intégration Home Assistant
+# SolaX Local - Home Assistant Integration
 
-Une intégration [Home Assistant](https://www.home-assistant.io/) pour contrôler et monitorer votre onduleur **SolaX** en local via le protocole HTTP.
+A [Home Assistant](https://www.home-assistant.io/) integration to control and monitor your **SolaX** inverter locally over HTTP.
 
-## 🌟 Fonctionnalités
+## 🌟 Features
 
-- 📊 **Monitoring en temps réel** : Puissance MPPT, production d'énergie, température
-- 🔄 **Contrôle de l'onduleur** : Allumage/extinction via switch
-- 📈 **Tracking de production** : Production du jour et cumulative
-- 🕐 **Historique** : Timestamp de la dernière mise à jour
-- 🌍 **Support multi-inverter** : X1 Micro 2-in-1
-- 🔐 **Connexion locale** : Pas de cloud, entièrement en local
-- 🇫🇷 **Interface localisée** : Français et anglais
+- 📊 **Real-time monitoring**: MPPT power, energy production, temperature
+- 🔄 **Inverter control**: Power on/off via switch
+- 📈 **Production tracking**: Daily and cumulative production
+- 🕐 **History**: Timestamp of the last update
+- 🌍 **Multi-inverter support**: X1 Micro 2-in-1
+- 🔐 **Local connection**: No cloud, fully local
+- 🇬🇧 **Localized interface**: English and French
 
-## 📋 Capteurs (Sensors)
+## 📋 Sensors
 
-| Capteur | Description | Unité |
-|---------|-------------|-------|
-| `mppt1_puissance` | Puissance MPPT 1 | W |
-| `mppt1_voltage` | Tension MPPT 1 | V |
-| `mppt1_intensite` | Courant MPPT 1 | A |
-| `mppt2_puissance` | Puissance MPPT 2 | W |
-| `mppt2_voltage` | Tension MPPT 2 | V |
-| `mppt2_intensite` | Courant MPPT 2 | A |
-| `inverter_voltage` | Tension de sortie onduleur | V |
-| `inverter_intensite` | Courant de sortie onduleur | A |
-| `inverter_puissance` | Puissance de sortie onduleur | W |
-| `inverter_freq` | Fréquence onduleur | Hz |
-| `temp` | Température de l'onduleur | °C |
-| `prod_auj` | Production du jour | kWh |
-| `prod_total` | Production totale cumulative | kWh |
-| `mode` | Mode de fonctionnement | WaitMode/CheckMode/NormalMode |
-| `ip` | Adresse IP de l'onduleur | - |
-| `num_inverter` | Numéro de série | - |
-| `last_update` | Dernière mise à jour | timestamp |
+| Sensor | Description | Unit |
+|--------|-------------|------|
+| `mppt1_puissance` | MPPT 1 power | W |
+| `mppt1_voltage` | MPPT 1 voltage | V |
+| `mppt1_intensite` | MPPT 1 current | A |
+| `mppt2_puissance` | MPPT 2 power | W |
+| `mppt2_voltage` | MPPT 2 voltage | V |
+| `mppt2_intensite` | MPPT 2 current | A |
+| `inverter_voltage` | Inverter output voltage | V |
+| `inverter_intensite` | Inverter output current | A |
+| `inverter_puissance` | Inverter output power | W |
+| `inverter_freq` | Inverter frequency | Hz |
+| `temp` | Inverter temperature | °C |
+| `prod_auj` | Daily production | kWh |
+| `prod_total` | Total cumulative production | kWh |
+| `mode` | Operating mode | WaitMode/CheckMode/NormalMode |
+| `ip` | Inverter IP address | - |
+| `num_inverter` | Serial number | - |
+| `last_update` | Last update | timestamp |
 
-## 🔌 Entités de Contrôle
+## 🔌 Control Entities
 
-- **Binary Sensor** : État en ligne/hors ligne
-- **Switch** : Allumage/extinction de l'onduleur
+- **Binary Sensor**: Online/offline state
+- **Switch**: Inverter power on/off
 
 ## 🔄 Services
 
-### Actualiser tous les onduleurs
+### Refresh all inverters
 
 Service: `solax_local.refresh_all`
 
-Force la mise à jour immédiate de tous les onduleurs configurés sans attendre l'intervalle de scan.
+Forces an immediate update of all configured inverters without waiting for the scan interval.
 
-**Utilisation dans une automatisation** :
+**Usage in an automation**:
 ```yaml
 service: solax_local.refresh_all
 ```
 
-**Ou dans les outils de développement** :
-1. **Outils de développement** > **Services**
-2. Sélectionner `SolaX Local: Refresh all inverters`
-3. Cliquer **Exécuter**
+**Or in the Developer Tools**:
+1. **Developer Tools** > **Services**
+2. Select `SolaX Local: Refresh all inverters`
+3. Click **Execute**
 
 ## 🚀 Installation
 
-### Prérequis
+### Requirements
 
 - Home Assistant 2023.12+
-- Accès réseau à l'onduleur SolaX
-- Adresse IP et numéro de série de l'onduleur
+- Network access to the SolaX inverter
+- Inverter IP address and serial number
 
-### Via HACS (recommandé)
+### Via HACS (recommended)
 
-**Lien direct HACS** : 
+**Direct HACS link**:
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/Knetus56/solax_local&category=integration)
 
-Ou manuellement :
-1. Ouvrir Home Assistant
-2. Aller à **HACS** > **Intégrations**
-3. Cliquer sur le **menu** (⋯) > **Dépôts personnalisés**
-4. Ajouter l'URL: `https://github.com/Knetus56/solax_local`
-5. Chercher "SolaX Local"
-6. Cliquer **Installer**
-7. Redémarrer Home Assistant
+Or manually:
+1. Open Home Assistant
+2. Go to **HACS** > **Integrations**
+3. Click the **menu** (⋯) > **Custom repositories**
+4. Add the URL: `https://github.com/Knetus56/solax_local`
+5. Search for "SolaX Local"
+6. Click **Install**
+7. Restart Home Assistant
 
-### Installation manuelle
+### Manual installation
 
-1. Télécharger la dernière [version](https://github.com/Knetus56/solax_local/releases)
-2. Extraire dans `custom_components/solax_local/`
-3. Redémarrer Home Assistant
+1. Download the latest [release](https://github.com/Knetus56/solax_local/releases)
+2. Extract it into `custom_components/solax_local/`
+3. Restart Home Assistant
 
 ## ⚙️ Configuration
 
-### Via interface Home Assistant
+### Via Home Assistant UI
 
-1. **Paramètres** > **Appareils et services** > **Intégrations**
-2. Cliquer **Créer une intégration**
-3. Chercher et sélectionner **SolaX Local**
-4. Remplir les informations :
-   - **IP** : Adresse IP de l'onduleur (ex: `192.168.1.100`)
-   - **Type d'onduleur** : Sélectionner le modèle
-   - **Numéro de série** : Numéro de série de l'onduleur
-   - **Intervalle de scan** (optionnel) : Fréquence de mise à jour en secondes (défaut: 300s)
+1. **Settings** > **Devices & Services** > **Integrations**
+2. Click **Add Integration**
+3. Search for and select **SolaX Local**
+4. Enter the following information:
+   - **IP**: Inverter IP address (example: `192.168.1.100`)
+   - **Inverter type**: Select the model
+   - **Serial number**: Inverter serial number
+   - **Scan interval** (optional): Update frequency in seconds (default: 300s)
 
-## 🔧 Configuration avancée
+## 🔧 Advanced configuration
 
-### Intervalle de mise à jour
+### Update interval
 
-Par défaut, l'intégration interroge l'onduleur toutes les **300 secondes** (5 minutes). Vous pouvez l'ajuster lors de la configuration.
+By default, the integration polls the inverter every **300 seconds** (5 minutes). You can adjust this during configuration.
 
-### Entités DIAGNOSTIC
+### DIAGNOSTIC entities
 
-Les entités suivantes sont masquées par défaut (onglet Avancé) :
-- État du mode
-- Adresse IP
-- Numéro de série
-- Dernière mise à jour
+The following entities are hidden by default (Advanced tab):
+- Mode state
+- IP address
+- Serial number
+- Last update
 
-Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner le device > **Afficher les entités masquées**
+To display them: **Settings** > **Devices & Services** > Select the device > **Show hidden entities**
 
+### Sensors show "Unknown"
 
-### Les capteurs affichent "Inconnu"
+- Check that the IP address is correct
+- Check that the inverter is **online** and **powered**
+- Check the **network connectivity** between HA and the inverter
+- Increase the `scan interval` in case of network timeout
 
-- Vérifier que l'adresse IP est correcte
-- Vérifier que l'onduleur est **en ligne** et **alimenté**
-- Vérifier la **connectivité réseau** entre HA et l'onduleur
-- Augmenter l'`intervalle de scan` en cas de timeout réseau
+### The integration does not load
 
-### L'intégration ne charge pas
+- Check the logs: **Settings** > **System** > **Logs**
+- Look for connection errors
+- Restart Home Assistant
 
-- Vérifier les logs : **Paramètres** > **Système** > **Journaux**
-- Chercher les erreurs de connexion
-- Redémarrer Home Assistant
+### The device does not show the model
 
-### Le device n'affiche pas le modèle
-
-- Cela signifie que le modèle sélectionné n'est pas reconnu
-- Vérifier la sélection lors de la configuration
-
+- This means the selected model is not recognized
+- Check the selection during configuration
 
 ## 📦 Versions
 
-- **v1.2.2** (2026-07-22) - Ajout de l'icône personnalisée pour HACS
-- **v1.2.1** (2026-07-22) - Ajout du service refresh_all pour actualiser tous les onduleurs
-- **v1.2.0** (2026-07-22) - Ajout des capteurs tension/courant MPPT et métriques onduleur
-- **v1.1.0** (2026-07-22) - Fix clés MPPT et initialisation du modèle
+- **v1.2.2** (2026-07-22) - Added custom icon for HACS
+- **v1.2.1** (2026-07-22) - Added refresh_all service to refresh all inverters
+- **v1.2.0** (2026-07-22) - Added MPPT voltage/current sensors and inverter metrics
+- **v1.1.0** (2026-07-22) - Fix MPPT keys and model initialization
 
+## 🙏 Credits
 
-## 🙏 Remerciements
-
-- https://github.com/CurlyMoo grace a son reverse ici : https://github.com/squishykid/solax/issues/191
+- https://github.com/CurlyMoo thanks to this reverse engineering: https://github.com/squishykid/solax/issues/191
