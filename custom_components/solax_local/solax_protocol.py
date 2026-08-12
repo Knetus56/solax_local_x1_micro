@@ -118,42 +118,62 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
     decoded = _decode_payload(payload)
     _LOGGER.debug("parse_data: decoded length=%d", len(decoded))
 
-    if len(decoded) < 112:
+    # Accept shorter payloads (some firmware returns smaller packets). The PHP implementation
+    # accepted >= 80 bytes, so follow that here and be defensive when reading optional fields.
+    if len(decoded) < 80:
         _LOGGER.debug("parse_data: payload too short (%d bytes), marking offline", len(decoded))
         return _offline_state(host, serial, "Unknown")
 
     serial_bytes = decoded[8:22]
     serial_inverter = serial_bytes.decode("ascii", errors="ignore")
-    _LOGGER.debug("parse_data: packet type=0x%02X serial_in_packet=%r expected=%r", decoded[2], serial_inverter, serial)
+    _LOGGER.debug("parse_data: packet type=0x%02X serial_in_packet=%r expected=%r", decoded[2] if len(decoded) > 2 else None, serial_inverter, serial)
 
-    if decoded[2] != 0x70 or serial_inverter != serial:
-        _LOGGER.debug("parse_data: packet mismatch (type=0x%02X serial=%r), marking offline", decoded[2], serial_inverter)
+    # Don't strictly require a specific packet type: different firmwares may vary the response type.
+    # Only verify the serial matches the configured inverter serial.
+    if serial_inverter != serial:
+        _LOGGER.debug("parse_data: serial mismatch in packet (serial=%r), marking offline", serial_inverter)
         return _offline_state(host, serial, "Unknown")
 
-    mode = _u16(decoded, 90)
+    # Some fields are at higher offsets and may be missing in shorter responses, so read defensively.
+    # Default values mirror the offline state defaults where appropriate.
+    mode = _u16(decoded, 90) if len(decoded) > 91 else 0
     status = 1 if mode == 2 else 0
     mode_names = {0: "WaitMode", 1: "CheckMode", 2: "NormalMode"}
     mode_name = mode_names.get(mode, "Unknown")
 
+    mppt1_puissance = _u16(decoded, 86) if len(decoded) > 87 else 0
+    mppt2_puissance = _u16(decoded, 88) if len(decoded) > 89 else 0
+    mppt1_voltage = _u16(decoded, 78) / 10.0 if len(decoded) > 79 else 0.0
+    mppt2_voltage = _u16(decoded, 80) / 10.0 if len(decoded) > 81 else 0.0
+    mppt1_intensite = _u16(decoded, 82) / 10.0 if len(decoded) > 83 else 0.0
+    mppt2_intensite = _u16(decoded, 84) / 10.0 if len(decoded) > 85 else 0.0
 
+    inverter_voltage = _u16(decoded, 70) / 10.0 if len(decoded) > 71 else 0.0
+    inverter_intensite = _u16(decoded, 72) / 10.0 if len(decoded) > 73 else 0.0
+    inverter_puissance = _u16(decoded, 74) if len(decoded) > 75 else 0
+    inverter_freq = _u16(decoded, 76) / 100.0 if len(decoded) > 77 else 0.0
+
+    prod_auj = round(_u16(decoded, 96) / 10.0, 2) if len(decoded) > 97 else 0.0
+    prod_total = round(_u32(decoded, 92) / 10.0, 2) if len(decoded) > 95 else 0.0
+    temp = _u16(decoded, 100) if len(decoded) > 101 else 0
 
     result = {
         "online": True,
         "status": status,
         "mode": mode_name,
-        "mppt1_puissance": _u16(decoded, 86),
-        "mppt2_puissance": _u16(decoded, 88),
-        "mppt1_voltage": _u16(decoded, 78)/ 10.0,
-        "mppt2_voltage": _u16(decoded, 80)/ 10.0,
-        "mppt1_intensite": _u16(decoded, 82)/ 10.0,
-        "mppt2_intensite": _u16(decoded, 84)/ 10.0,        
-        "inverter_voltage": _u16(decoded, 70) / 10.0,
-        "inverter_intensite": _u16(decoded, 72) / 10.0,
-        "inverter_puissance": _u16(decoded, 74),
-        "inverter_freq": _u16(decoded, 76) / 100.0,    
-        "prod_auj": round(_u16(decoded, 96) / 10.0, 2),
-        "prod_total": round(_u32(decoded, 92) / 10.0, 2),
-        "temp": _u16(decoded, 100),
+        "mppt1_puissance": mppt1_puissance,
+        "mppt2_puissance": mppt2_puissance,
+        "mppt1_voltage": mppt1_voltage,
+        "mppt2_voltage": mppt2_voltage,
+        "mppt1_intensite": mppt1_intensite,
+        "mppt2_intensite": mppt2_intensite,
+        "inverter_voltage": inverter_voltage,
+        "inverter_intensite": inverter_intensite,
+        "inverter_puissance": inverter_puissance,
+        "inverter_freq": inverter_freq,
+        "prod_auj": prod_auj,
+        "prod_total": prod_total,
+        "temp": temp,
         "ip": host,
         "num_inverter": serial,
     }
@@ -171,9 +191,11 @@ def fetch_inverter_state(host: str, serial: str) -> dict[str, Any]:
         with request.urlopen(req, timeout=5) as response:
             body = response.read().decode("ascii", errors="ignore")
             _LOGGER.debug("fetch_inverter_state: HTTP %d body_len=%d", response.status, len(body))
-            if response.status == 200 and len(body) >= 150:
+            # Some firmwares return shorter base64 payloads. If HTTP 200, forward the body to parse_data
+            # which will defensively handle shorter payloads (based on the PHP behavior).
+            if response.status == 200:
                 return parse_data(body.replace("\n", ""), host, serial)
-            _LOGGER.debug("fetch_inverter_state: response too short or bad status, marking offline")
+            _LOGGER.debug("fetch_inverter_state: bad status, marking offline")
     except (error.URLError, error.HTTPError, TimeoutError, ValueError) as exc:
         _LOGGER.debug("fetch_inverter_state: request failed: %s", exc)
 
