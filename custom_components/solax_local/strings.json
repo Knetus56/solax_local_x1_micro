@@ -17,12 +17,19 @@
       }
     }
   },
-  "options": {},
   "entity": {
     "sensor": {
-      "mptt1": "MPPT Power 1",
-      "mptt2": "MPPT Power 2",
-      "mptt_total": "Total power",
+      "last_update": "Last update",
+      "mppt1_puissance": "MPPT 1 power",
+      "mppt1_voltage": "MPPT 1 voltage",
+      "mppt1_intensite": "MPPT 1 current",
+      "mppt2_puissance": "MPPT 2 power",
+      "mppt2_voltage": "MPPT 2 voltage",
+      "mppt2_intensite": "MPPT 2 current",
+      "inverter_voltage": "Inverter voltage",
+      "inverter_intensite": "Inverter current",
+      "inverter_puissance": "Inverter power",
+      "inverter_freq": "Inverter frequency",
       "prod_auj": "Daily production",
       "prod_total": "Total production",
       "temp": "Temperature",
@@ -37,6 +44,10 @@
       "switch": "State"
     }
   },
-  "device_automation": {},
-  "services": {}
+  "services": {
+    "refresh_all": {
+      "name": "Refresh all inverters",
+      "description": "Force immediate update of all SolaX inverters"
+    }
+  }
 }

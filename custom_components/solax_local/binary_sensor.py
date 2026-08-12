@@ -23,7 +23,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddE
 class SolaxBinarySensor(CoordinatorEntity[SolaxDataUpdateCoordinator], BinarySensorEntity):
     def __init__(self, coordinator, entry_id, model: str) -> None:
         super().__init__(coordinator)
-        self._attr_name = "Online"
+        self._attr_translation_key = "online"
+        self._attr_name = None
         self._attr_unique_id = f"{entry_id}_online"
         self._attr_has_entity_name = True
         self._attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
