@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -26,6 +26,7 @@ class SolaxBinarySensor(CoordinatorEntity[SolaxDataUpdateCoordinator], BinarySen
         self._attr_name = "Online"
         self._attr_unique_id = f"{entry_id}_online"
         self._attr_has_entity_name = True
+        self._attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         # Attach entity to inverter device by serial
         self._attr_device_info = {

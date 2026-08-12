@@ -134,7 +134,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddE
             "inverter_freq",
             "Inverter frequency",
             UnitOfFrequency.HERTZ,
-            None,
+            SensorDeviceClass.FREQUENCY,
             state_class=SensorStateClass.MEASUREMENT,
             device_info=device_info,
         ),
