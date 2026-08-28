@@ -176,6 +176,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ## 📦 Versions
 
+- **v1.4.1** (2026-08-28) - Ajout de logs `debug` dans `parse_data()` (`solax_protocol.py`) : payload base64 brut reçu et bytes décodés en hexadécimal, pour faciliter le diagnostic des trames renvoyées par l'onduleur
 - **v1.4.0** (2026-08-28) - Reprend plusieurs idées de la PR #1 (fork [webpatrick/solax_local](https://github.com/webpatrick/solax_local), fermée sans merge) : traduction néerlandaise (`nl.json`), `device_class` `connectivity`/`frequency` sur les capteurs `online`/`inverter_freq`, et un parsing des trames plus tolérant côté `solax_protocol.py` (paquets dès 80 octets au lieu de 112, type de paquet non vérifié — seul le numéro de série identifie la réponse). `mode`/`prod_auj`/`prod_total` restent à `None` (jamais un faux 0) quand leur registre n'est pas présent dans un paquet raccourci
 - **v1.3.6** (2026-08-28) - Refactor interne de `coordinator.py` : la logique de persistance des valeurs (`prod_auj`/`prod_total`, reset à minuit) est extraite dans une méthode dédiée `_apply_persistence()`. Aucun changement de comportement, juste plus lisible
 - **v1.3.5** (2026-08-28) - Ajout d'une CI GitHub Actions (`hassfest` + validation Python/JSON, voir section suivante). Valeurs du capteur `mode` passées en snake_case minuscule (`wait_mode`/`check_mode`/`normal_mode` au lieu de `WaitMode`/`CheckMode`/`NormalMode`) pour respecter le schéma officiel de traduction HA (`hassfest` l'exigeait) — sans impact visible : les libellés affichés restent identiques

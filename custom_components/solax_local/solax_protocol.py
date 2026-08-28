@@ -149,8 +149,9 @@ def _decode_payload(payload: str) -> bytes:
 
 
 def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
+    _LOGGER.debug("parse_data: raw base64 payload=%r", payload)
     decoded = _decode_payload(payload)
-    _LOGGER.debug("parse_data: decoded length=%d", len(decoded))
+    _LOGGER.debug("parse_data: decoded length=%d raw bytes=%s", len(decoded), decoded.hex())
 
     if len(decoded) < _MIN_PAYLOAD_LENGTH:
         _LOGGER.debug("parse_data: payload too short (%d bytes), marking offline", len(decoded))
