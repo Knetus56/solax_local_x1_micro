@@ -1,6 +1,5 @@
 {
   "name": "SolaX Local",
-  "version": "1.0.0",
   "homeassistant": "2024.1.0",
   "render_readme": true
 }
