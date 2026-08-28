@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
@@ -22,6 +22,7 @@ class SolaxBinarySensor(CoordinatorEntity[SolaxDataUpdateCoordinator], BinarySen
         self._attr_translation_key = "online"
         self._attr_unique_id = f"{entry_id}_online"
         self._attr_has_entity_name = True
+        self._attr_device_class = BinarySensorDeviceClass.CONNECTIVITY
         self._attr_entity_category = EntityCategory.DIAGNOSTIC
         self._attr_device_info = coordinator.device_info
 
