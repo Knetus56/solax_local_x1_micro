@@ -119,12 +119,27 @@ Le type d'onduleur et le numéro de série restent fixes après la création (il
 
 Par défaut, l'intégration interroge l'onduleur toutes les **300 secondes** (5 minutes). Vous pouvez l'ajuster lors de la configuration.
 
-### Pause nocturne
+### Pause nocturne (basée sur `sun.sun`)
 
-Les onduleurs SolaX coupent leur dongle Wi-Fi la nuit, ce qui rend chaque requête vouée à l'échec. L'intégration détecte automatiquement la nuit via l'entité `sun.sun` de Home Assistant et **saute la requête** dans ce cas (aucun appel réseau inutile), avec une marge d'**1 heure** de part et d'autre du lever/coucher réel du soleil (pour ne pas rater un onduleur qui démarre un peu plus tôt ou plus tard que prévu).
+Les onduleurs SolaX coupent leur dongle Wi-Fi la nuit : chaque requête envoyée pendant cette période échoue de toute façon (timeout). L'intégration évite ces appels inutiles en s'appuyant sur l'entité **`sun.sun`**, intégrée nativement à Home Assistant (composant `sun`, quasi toujours présent — calcule le lever/coucher réel du soleil selon la position géographique et le fuseau horaire configurés dans **Paramètres > Système > Général**).
 
-- Si l'entité `sun.sun` n'est pas disponible (intégration Soleil désactivée/absente), la pause nocturne est simplement désactivée et l'intégration interroge normalement à chaque cycle, comme avant.
-- Pendant la pause, les capteurs se comportent comme en cas d'erreur réseau : mesures instantanées à 0, `mode` à "Inconnu", `prod_auj`/`prod_total` conservent leur dernière valeur connue (voir section suivante).
+**Comment ça marche** : à chaque cycle de poll, l'intégration vérifie si le soleil est couché depuis plus d'1h *et* le restera pour au moins 1h de plus. Seulement dans ce cas — nuit "installée", loin de toute transition — la requête HTTP est carrément sautée. Cette double vérification (1h avant *et* 1h après l'instant présent) crée naturellement une marge symétrique d'**1 heure** autour du lever et du coucher réels, sans avoir besoin de calculer soi-même les horaires astronomiques :
+
+```
+                    coucher réel du soleil                lever réel du soleil
+                            │                                      │
+   ── requêtes normales ────┤── marge 1h ──┤ PAUSE (pas de requête) ├── marge 1h ──┤── requêtes normales ──
+                                            │                       │
+                                     coucher + 1h              lever - 1h
+```
+
+Concrètement : si le soleil se couche à 20h00, l'intégration continue d'interroger l'onduleur jusqu'à 21h00, puis se met en pause. Si le lever est à 07h00 le lendemain, elle reprend dès 06h00 — pour ne pas rater un onduleur qui démarrerait un peu plus tôt ou plus tard que prévu (nuages, saison, décalage de l'horloge interne de l'onduleur, etc.).
+
+**Si l'entité `sun.sun` n'existe pas** (composant Soleil désactivé ou supprimé manuellement) : la pause nocturne se désactive automatiquement et silencieusement — l'intégration interroge normalement à **chaque** cycle de poll, jour et nuit, exactement comme avant l'ajout de cette fonctionnalité. Aucune configuration n'est nécessaire pour ce cas, aucune erreur n'est levée.
+
+**Effet sur les capteurs pendant la pause** : identique à une erreur réseau classique — mesures instantanées (puissance, tension, courant, fréquence, température) à `0`, `mode` à "Inconnu", `prod_auj`/`prod_total` conservent leur dernière valeur connue (voir section suivante). Le capteur `binary_sensor.online` passe à `Off`.
+
+Cette pause n'est pas configurable pour l'instant (pas de bascule marche/arrêt ni de réglage de marge dans l'UI) — si besoin, ouvrez une issue sur le repo.
 
 ### Entités DIAGNOSTIC
 
