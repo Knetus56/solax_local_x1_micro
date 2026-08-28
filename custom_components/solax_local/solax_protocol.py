@@ -28,13 +28,15 @@ def crc16(data: bytes, length: int) -> tuple[int, int]:
     return (reg >> 8) & 0xFF, reg & 0xFF
 
 
-def _offline_state(host: str, serial: str) -> dict[str, Any]:
+def offline_state(host: str, serial: str) -> dict[str, Any]:
     # mode/prod_auj/prod_total reflect only what a successful query
     # returned; on any request error/mismatch there is no real value to
     # show, so they stay None (the coordinator keeps the last known value
     # instead) rather than a fabricated state or a fake drop to zero for
     # the cumulative energy counters. The "online" binary_sensor is the
-    # single source of truth for connectivity.
+    # single source of truth for connectivity. Public: also used directly
+    # by the coordinator when it deliberately skips a request (e.g. at
+    # night, see coordinator.py).
     return {
         "online": False,
         "status": 0,
@@ -130,7 +132,7 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
 
     if len(decoded) < 112:
         _LOGGER.debug("parse_data: payload too short (%d bytes), marking offline", len(decoded))
-        return _offline_state(host, serial)
+        return offline_state(host, serial)
 
     serial_bytes = decoded[8:22]
     serial_inverter = serial_bytes.decode("ascii", errors="ignore")
@@ -138,7 +140,7 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
 
     if decoded[2] != 0x70 or serial_inverter != serial:
         _LOGGER.debug("parse_data: packet mismatch (type=0x%02X serial=%r), marking offline", decoded[2], serial_inverter)
-        return _offline_state(host, serial)
+        return offline_state(host, serial)
 
     mode = _u16(decoded, 90)
     status = 1 if mode == 2 else 0
@@ -189,7 +191,7 @@ async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial
     except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
         _LOGGER.debug("fetch_inverter_state: request failed: %s", exc)
 
-    return _offline_state(host, serial)
+    return offline_state(host, serial)
 
 
 async def set_inverter_state(session: aiohttp.ClientSession, host: str, serial: str, on: bool) -> bool:
