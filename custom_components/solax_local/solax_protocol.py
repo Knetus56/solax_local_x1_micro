@@ -9,7 +9,7 @@ import aiohttp
 _LOGGER = logging.getLogger(__name__)
 
 _REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=5)
-_MODE_NAMES = {0: "WaitMode", 1: "CheckMode", 2: "NormalMode"}
+_MODE_NAMES = {0: "wait_mode", 1: "check_mode", 2: "normal_mode"}
 
 
 def crc16(data: bytes, length: int) -> tuple[int, int]:
