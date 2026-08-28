@@ -10,25 +10,44 @@
           "inverter_type": "Type d'onduleur",
           "serial": "Numéro de série",
           "scan_interval": "Intervalle de scan (secondes)"
-        },
-        "error": {
-          "invalid_serial": "Numéro de série invalide. Il doit être alphanumérique (5-21 caractères)."
+        }
+      }
+    },
+    "error": {
+      "invalid_serial": "Numéro de série invalide. Il doit être alphanumérique (5-21 caractères)."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Modifier SolaX Local",
+        "description": "Modifiez l'hôte ou l'intervalle de scan de l'onduleur.",
+        "data": {
+          "host": "Hôte",
+          "scan_interval": "Intervalle de scan (secondes)"
         }
       }
     }
   },
-  "options": {},
   "entity": {
     "sensor": {
-      "mptt1": "Puissance MPPT 1",
-      "mptt2": "Puissance MPPT 2",
-      "mptt_total": "Puissance totale",
+      "mppt1_puissance": "Puissance MPPT 1",
+      "mppt1_voltage": "Tension MPPT 1",
+      "mppt1_intensite": "Courant MPPT 1",
+      "mppt2_puissance": "Puissance MPPT 2",
+      "mppt2_voltage": "Tension MPPT 2",
+      "mppt2_intensite": "Courant MPPT 2",
+      "inverter_voltage": "Tension onduleur",
+      "inverter_intensite": "Courant onduleur",
+      "inverter_puissance": "Puissance onduleur",
+      "inverter_freq": "Fréquence onduleur",
       "prod_auj": "Production du jour",
       "prod_total": "Production totale",
       "temp": "Température",
       "mode": "Mode",
       "ip": "IP",
-      "num_inverter": "Numéro de série"
+      "num_inverter": "Numéro de série",
+      "last_update": "Dernière requête"
     },
     "binary_sensor": {
       "online": "En ligne"

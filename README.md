@@ -10,7 +10,8 @@ Une intégration [Home Assistant](https://www.home-assistant.io/) pour contrôle
 - 🕐 **Historique** : Timestamp de la dernière mise à jour
 - 🌍 **Support multi-inverter** : X1 Micro 2-in-1
 - 🔐 **Connexion locale** : Pas de cloud, entièrement en local
-- 🇫🇷 **Interface localisée** : Français et anglais
+- 🇫🇷 **Interface localisée** : Français et anglais (traduction complète des entités selon la langue de Home Assistant)
+- ⚙️ **Modifiable après coup** : changez l'adresse IP ou l'intervalle de scan sans recréer l'intégration
 
 ## 📋 Capteurs (Sensors)
 
@@ -98,6 +99,19 @@ Ou manuellement :
    - **Numéro de série** : Numéro de série de l'onduleur
    - **Intervalle de scan** (optionnel) : Fréquence de mise à jour en secondes (défaut: 300s)
 
+> Le numéro de série est automatiquement normalisé en majuscules.
+
+### Modifier la configuration après installation
+
+Il n'est plus nécessaire de supprimer/recréer l'intégration pour changer l'adresse IP ou l'intervalle de scan :
+
+1. **Paramètres** > **Appareils et services**
+2. Repérer la carte **SolaX Local** > cliquer **Configurer** (icône ⚙️)
+3. Mettre à jour l'**hôte** et/ou l'**intervalle de scan**
+4. Valider — l'intégration se recharge automatiquement avec les nouvelles valeurs
+
+Le type d'onduleur et le numéro de série restent fixes après la création (ils identifient l'appareil) ; pour les changer, il faut recréer l'intégration.
+
 ## 🔧 Configuration avancée
 
 ### Intervalle de mise à jour
@@ -136,6 +150,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ## 📦 Versions
 
+- **v1.3.0** (2026-08-28) - Flow d'options (modifier IP/intervalle de scan sans recréer l'intégration), numéro de série normalisé en majuscules, traductions d'entités correctement câblées (noms adaptés à la langue de HA), correction des messages d'erreur du formulaire de configuration, migration réseau vers `aiohttp` (session partagée HA au lieu de threads bloquants), nettoyage interne (dédoublonnage `device_info`, suppression de code mort)
 - **v1.2.2** (2026-07-22) - Ajout de l'icône personnalisée pour HACS
 - **v1.2.1** (2026-07-22) - Ajout du service refresh_all pour actualiser tous les onduleurs
 - **v1.2.0** (2026-07-22) - Ajout des capteurs tension/courant MPPT et métriques onduleur

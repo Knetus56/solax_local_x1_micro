@@ -6,7 +6,6 @@ DEFAULT_SCAN_INTERVAL = 300
 
 # Config flow constants
 CONF_INVERTER_TYPE = "inverter_type"
-CONF_SERIAL_NUMBER = "serial_number"
 
 # Inverter types
 INVERTER_TYPE_X1_MICRO_2IN1 = "x1_micro_2in1"

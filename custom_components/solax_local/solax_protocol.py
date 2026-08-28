@@ -3,9 +3,13 @@ from __future__ import annotations
 import base64
 import logging
 from typing import Any
-from urllib import error, request
+
+import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
+
+_REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=5)
+_MODE_NAMES = {0: "WaitMode", 1: "CheckMode", 2: "NormalMode"}
 
 
 def crc16(data: bytes, length: int) -> tuple[int, int]:
@@ -132,10 +136,7 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
 
     mode = _u16(decoded, 90)
     status = 1 if mode == 2 else 0
-    mode_names = {0: "WaitMode", 1: "CheckMode", 2: "NormalMode"}
-    mode_name = mode_names.get(mode, "Unknown")
-
-
+    mode_name = _MODE_NAMES.get(mode, "Unknown")
 
     result = {
         "online": True,
@@ -143,14 +144,14 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
         "mode": mode_name,
         "mppt1_puissance": _u16(decoded, 86),
         "mppt2_puissance": _u16(decoded, 88),
-        "mppt1_voltage": _u16(decoded, 78)/ 10.0,
-        "mppt2_voltage": _u16(decoded, 80)/ 10.0,
-        "mppt1_intensite": _u16(decoded, 82)/ 10.0,
-        "mppt2_intensite": _u16(decoded, 84)/ 10.0,        
+        "mppt1_voltage": _u16(decoded, 78) / 10.0,
+        "mppt2_voltage": _u16(decoded, 80) / 10.0,
+        "mppt1_intensite": _u16(decoded, 82) / 10.0,
+        "mppt2_intensite": _u16(decoded, 84) / 10.0,
         "inverter_voltage": _u16(decoded, 70) / 10.0,
         "inverter_intensite": _u16(decoded, 72) / 10.0,
         "inverter_puissance": _u16(decoded, 74),
-        "inverter_freq": _u16(decoded, 76) / 100.0,    
+        "inverter_freq": _u16(decoded, 76) / 100.0,
         "prod_auj": round(_u16(decoded, 96) / 10.0, 2),
         "prod_total": round(_u32(decoded, 92) / 10.0, 2),
         "temp": _u16(decoded, 100),
@@ -161,36 +162,41 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
     return result
 
 
-def fetch_inverter_state(host: str, serial: str) -> dict[str, Any]:
+async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial: str) -> dict[str, Any]:
     payload = build_data_packet(serial)
-    req = request.Request(f"http://{host}", data=payload.encode("ascii"), method="POST")
-    req.add_header("Content-Type", "application/octet-stream")
-
     _LOGGER.debug("fetch_inverter_state: querying host=%s serial=%s", host, serial)
     try:
-        with request.urlopen(req, timeout=5) as response:
-            body = response.read().decode("ascii", errors="ignore")
+        async with session.post(
+            f"http://{host}",
+            data=payload.encode("ascii"),
+            headers={"Content-Type": "application/octet-stream"},
+            timeout=_REQUEST_TIMEOUT,
+        ) as response:
+            raw = await response.read()
+            body = raw.decode("ascii", errors="ignore")
             _LOGGER.debug("fetch_inverter_state: HTTP %d body_len=%d", response.status, len(body))
             if response.status == 200 and len(body) >= 150:
                 return parse_data(body.replace("\n", ""), host, serial)
             _LOGGER.debug("fetch_inverter_state: response too short or bad status, marking offline")
-    except (error.URLError, error.HTTPError, TimeoutError, ValueError) as exc:
+    except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
         _LOGGER.debug("fetch_inverter_state: request failed: %s", exc)
 
     return _offline_state(host, serial)
 
 
-def set_inverter_state(host: str, serial: str, on: bool) -> bool:
+async def set_inverter_state(session: aiohttp.ClientSession, host: str, serial: str, on: bool) -> bool:
     payload = build_sys_packet(serial, on)
-    req = request.Request(f"http://{host}", data=payload.encode("ascii"), method="POST")
-    req.add_header("Content-Type", "application/octet-stream")
-
     _LOGGER.debug("set_inverter_state: host=%s serial=%s on=%s", host, serial, on)
     try:
-        with request.urlopen(req, timeout=5) as response:
+        async with session.post(
+            f"http://{host}",
+            data=payload.encode("ascii"),
+            headers={"Content-Type": "application/octet-stream"},
+            timeout=_REQUEST_TIMEOUT,
+        ) as response:
             success = response.status == 200
             _LOGGER.debug("set_inverter_state: HTTP %d success=%s", response.status, success)
             return success
-    except (error.URLError, error.HTTPError, TimeoutError, ValueError) as exc:
+    except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
         _LOGGER.debug("set_inverter_state: request failed: %s", exc)
         return False
