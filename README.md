@@ -12,6 +12,7 @@ Une intégration [Home Assistant](https://www.home-assistant.io/) pour contrôle
 - 🔐 **Connexion locale** : Pas de cloud, entièrement en local
 - 🇫🇷 **Interface localisée** : Français et anglais (traduction complète des entités selon la langue de Home Assistant)
 - ⚙️ **Modifiable après coup** : changez l'adresse IP ou l'intervalle de scan sans recréer l'intégration
+- 🌙 **Pause nocturne automatique** : pas de requête inutile pendant la nuit (basé sur le lever/coucher du soleil, marge d'1h)
 
 ## 📋 Capteurs (Sensors)
 
@@ -118,6 +119,13 @@ Le type d'onduleur et le numéro de série restent fixes après la création (il
 
 Par défaut, l'intégration interroge l'onduleur toutes les **300 secondes** (5 minutes). Vous pouvez l'ajuster lors de la configuration.
 
+### Pause nocturne
+
+Les onduleurs SolaX coupent leur dongle Wi-Fi la nuit, ce qui rend chaque requête vouée à l'échec. L'intégration détecte automatiquement la nuit via l'entité `sun.sun` de Home Assistant et **saute la requête** dans ce cas (aucun appel réseau inutile), avec une marge d'**1 heure** de part et d'autre du lever/coucher réel du soleil (pour ne pas rater un onduleur qui démarre un peu plus tôt ou plus tard que prévu).
+
+- Si l'entité `sun.sun` n'est pas disponible (intégration Soleil désactivée/absente), la pause nocturne est simplement désactivée et l'intégration interroge normalement à chaque cycle, comme avant.
+- Pendant la pause, les capteurs se comportent comme en cas d'erreur réseau : mesures instantanées à 0, `mode` à "Inconnu", `prod_auj`/`prod_total` conservent leur dernière valeur connue (voir section suivante).
+
 ### Entités DIAGNOSTIC
 
 Les entités suivantes sont masquées par défaut (onglet Avancé) :
@@ -131,6 +139,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ### Les capteurs affichent "Inconnu"
 
+- Normal la nuit (pause nocturne automatique, voir plus haut) ou en cas d'erreur de requête ponctuelle — `mode` repasse à "Inconnu" jusqu'au prochain poll réussi
 - Vérifier que l'adresse IP est correcte
 - Vérifier que l'onduleur est **en ligne** et **alimenté**
 - Vérifier la **connectivité réseau** entre HA et l'onduleur
@@ -150,9 +159,10 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ## 📦 Versions
 
+- **v1.3.3** (2026-08-28) - Pause nocturne automatique basée sur `sun.sun` (marge d'1h autour du lever/coucher réel) : plus de requête réseau inutile pendant la nuit quand l'onduleur a coupé son Wi-Fi. Se désactive proprement si l'entité `sun.sun` est absente
+- **v1.3.2** (2026-08-28) - Capteur `mode` passé en type énuméré (`sensor.enum`) : seules `WaitMode`/`CheckMode`/`NormalMode` sont des valeurs valides, traduites en FR/EN ; il repasse à "Inconnu" à chaque erreur de requête (reflète uniquement le dernier poll réussi, plus de valeur inventée type "Offline"). `prod_auj`/`prod_total` gardent leur dernière valeur connue en cas d'erreur de requête au lieu de retomber à 0 (évite de fausser les statistiques long terme)
 - **v1.3.1** (2026-08-28) - Correction du schéma de traduction des noms d'entités (structure imbriquée `{"name": ...}` requise par HA — les noms ne se résolvaient pas sans ça) ; renommage MPPT 1/MPPT 2 → MPPT1/MPPT2
 - **v1.3.0** (2026-08-28) - Flow d'options (modifier IP/intervalle de scan sans recréer l'intégration), numéro de série normalisé en majuscules, traductions d'entités correctement câblées (noms adaptés à la langue de HA), correction des messages d'erreur du formulaire de configuration, migration réseau vers `aiohttp` (session partagée HA au lieu de threads bloquants), nettoyage interne (dédoublonnage `device_info`, suppression de code mort)
-- **v1.3.2** (2026-08-28) - Capteur `mode` passé en type énuméré (`sensor.enum`) : seules `WaitMode`/`CheckMode`/`NormalMode` sont des valeurs valides, traduites en FR/EN ; il repasse à "Inconnu" à chaque erreur de requête (reflète uniquement le dernier poll réussi, plus de valeur inventée type "Offline"). `prod_auj`/`prod_total` gardent leur dernière valeur connue en cas d'erreur de requête au lieu de retomber à 0 (évite de fausser les statistiques long terme)
 - **v1.2.2** (2026-07-22) - Ajout de l'icône personnalisée pour HACS
 - **v1.2.1** (2026-07-22) - Ajout du service refresh_all pour actualiser tous les onduleurs
 - **v1.2.0** (2026-07-22) - Ajout des capteurs tension/courant MPPT et métriques onduleur

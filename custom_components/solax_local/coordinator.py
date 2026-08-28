@@ -6,12 +6,21 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.sun import is_up
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+from homeassistant.util import dt as dt_util
 
 from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
-from .solax_protocol import fetch_inverter_state
+from .solax_protocol import fetch_inverter_state, offline_state
 
 _LOGGER = logging.getLogger(__name__)
+
+# Skip polling while solidly at night: local SolaX inverters power off
+# their Wi-Fi dongle overnight, so querying them is pointless. The margin
+# keeps polling active for an hour around actual sunrise/sunset, so an
+# inverter waking up earlier/later than the calculated sun times is still
+# picked up promptly instead of waiting for the next scan after margin end.
+_NIGHT_MARGIN = timedelta(hours=1)
 
 
 class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
@@ -52,9 +61,25 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     # returned, so it goes back to None/unknown on any request error.
     _PERSIST_LAST_VALUE_KEYS = ("prod_auj", "prod_total")
 
+    def _is_solidly_night(self) -> bool:
+        """True only while the sun has been down for a while and stays down for a while.
+
+        Requires the sun.sun entity to be present; if it's not (integration
+        disabled/removed), always return False so polling never gets
+        skipped based on a check we can't actually perform.
+        """
+        if self.hass.states.get("sun.sun") is None:
+            return False
+        now = dt_util.utcnow()
+        return not is_up(self.hass, now - _NIGHT_MARGIN) and not is_up(self.hass, now + _NIGHT_MARGIN)
+
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            data = await fetch_inverter_state(self.session, self.host, self.serial)
+            if self._is_solidly_night():
+                _LOGGER.debug("Skipping request: solidly night for %s", self.serial)
+                data = offline_state(self.host, self.serial)
+            else:
+                data = await fetch_inverter_state(self.session, self.host, self.serial)
             if self.data is not None:
                 for key in self._PERSIST_LAST_VALUE_KEYS:
                     if data.get(key) is None:
