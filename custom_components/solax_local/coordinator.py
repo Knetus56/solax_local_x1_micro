@@ -5,16 +5,24 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DEFAULT_SCAN_INTERVAL
+from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
 from .solax_protocol import fetch_inverter_state
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    def __init__(self, hass: HomeAssistant, host: str, serial: str, scan_interval: int = DEFAULT_SCAN_INTERVAL) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        host: str,
+        serial: str,
+        model: str,
+        scan_interval: int = DEFAULT_SCAN_INTERVAL,
+    ) -> None:
         super().__init__(
             hass,
             _LOGGER,
@@ -23,10 +31,23 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         self.host = host
         self.serial = serial
+        self.model = model
+        self.session = async_get_clientsession(hass)
+
+    @property
+    def device_info(self) -> dict[str, Any]:
+        """Shared device info, reused by every platform (sensor/binary_sensor/switch)."""
+        return {
+            "identifiers": {(DOMAIN, self.serial)},
+            "name": f"SolaX {self.serial}",
+            "manufacturer": "SolaX",
+            "model": self.model,
+            "connections": {("ip", self.host)},
+        }
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
-            data = await self.hass.async_add_executor_job(fetch_inverter_state, self.host, self.serial)
+            data = await fetch_inverter_state(self.session, self.host, self.serial)
             data["last_update"] = datetime.now(timezone.utc)
             return data
         except Exception as err:  # pragma: no cover - defensive path

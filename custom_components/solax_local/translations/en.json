@@ -10,9 +10,21 @@
           "inverter_type": "Inverter type",
           "serial": "Serial number",
           "scan_interval": "Scan interval (seconds)"
-        },
-        "errors": {
-          "invalid_serial": "Invalid serial number. It must be alphanumeric (5-21 characters)."
+        }
+      }
+    },
+    "error": {
+      "invalid_serial": "Invalid serial number. It must be alphanumeric (5-21 characters)."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update SolaX Local",
+        "description": "Update the inverter's host or scan interval.",
+        "data": {
+          "host": "Host",
+          "scan_interval": "Scan interval (seconds)"
         }
       }
     }

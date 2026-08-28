@@ -10,9 +10,21 @@
           "inverter_type": "Type d'onduleur",
           "serial": "Numéro de série",
           "scan_interval": "Intervalle de scan (secondes)"
-        },
-        "errors": {
-          "invalid_serial": "Numéro de série invalide. Il doit être alphanumérique (5-21 caractères)."
+        }
+      }
+    },
+    "error": {
+      "invalid_serial": "Numéro de série invalide. Il doit être alphanumérique (5-21 caractères)."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Modifier SolaX Local",
+        "description": "Modifiez l'hôte ou l'intervalle de scan de l'onduleur.",
+        "data": {
+          "host": "Hôte",
+          "scan_interval": "Intervalle de scan (secondes)"
         }
       }
     }
