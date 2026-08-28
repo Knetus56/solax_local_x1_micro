@@ -31,29 +31,29 @@
   },
   "entity": {
     "sensor": {
-      "mppt1_puissance": "MPPT Power 1",
-      "mppt1_voltage": "MPPT Voltage 1",
-      "mppt1_intensite": "MPPT Current 1",
-      "mppt2_puissance": "MPPT Power 2",
-      "mppt2_voltage": "MPPT Voltage 2",
-      "mppt2_intensite": "MPPT Current 2",
-      "inverter_voltage": "Inverter Voltage",
-      "inverter_intensite": "Inverter Current",
-      "inverter_puissance": "Inverter Power",
-      "inverter_freq": "Inverter Frequency",
-      "prod_auj": "Daily production",
-      "prod_total": "Total production",
-      "temp": "Temperature",
-      "mode": "Mode",
-      "ip": "IP",
-      "num_inverter": "Serial number",
-      "last_update": "Last update"
+      "mppt1_puissance": { "name": "MPPT1 Power" },
+      "mppt1_voltage": { "name": "MPPT1 Voltage" },
+      "mppt1_intensite": { "name": "MPPT1 Current" },
+      "mppt2_puissance": { "name": "MPPT2 Power" },
+      "mppt2_voltage": { "name": "MPPT2 Voltage" },
+      "mppt2_intensite": { "name": "MPPT2 Current" },
+      "inverter_voltage": { "name": "Inverter Voltage" },
+      "inverter_intensite": { "name": "Inverter Current" },
+      "inverter_puissance": { "name": "Inverter Power" },
+      "inverter_freq": { "name": "Inverter Frequency" },
+      "prod_auj": { "name": "Daily production" },
+      "prod_total": { "name": "Total production" },
+      "temp": { "name": "Temperature" },
+      "mode": { "name": "Mode" },
+      "ip": { "name": "IP" },
+      "num_inverter": { "name": "Serial number" },
+      "last_update": { "name": "Last update" }
     },
     "binary_sensor": {
-      "online": "Online"
+      "online": { "name": "Online" }
     },
     "switch": {
-      "switch": "State"
+      "switch": { "name": "State" }
     }
   },
   "services": {
