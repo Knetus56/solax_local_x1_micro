@@ -45,9 +45,20 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "connections": {("ip", self.host)},
         }
 
+    # Cumulative energy counters must never appear to drop to 0 when a poll
+    # fails to produce a fresh reading (that would corrupt long-term
+    # statistics) - keep the last known value instead. "mode" is not part
+    # of this list: it reflects only what the last query actually
+    # returned, so it goes back to None/unknown on any request error.
+    _PERSIST_LAST_VALUE_KEYS = ("prod_auj", "prod_total")
+
     async def _async_update_data(self) -> dict[str, Any]:
         try:
             data = await fetch_inverter_state(self.session, self.host, self.serial)
+            if self.data is not None:
+                for key in self._PERSIST_LAST_VALUE_KEYS:
+                    if data.get(key) is None:
+                        data[key] = self.data.get(key)
             data["last_update"] = datetime.now(timezone.utc)
             return data
         except Exception as err:  # pragma: no cover - defensive path

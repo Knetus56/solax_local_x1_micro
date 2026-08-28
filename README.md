@@ -152,6 +152,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 - **v1.3.1** (2026-08-28) - Correction du schéma de traduction des noms d'entités (structure imbriquée `{"name": ...}` requise par HA — les noms ne se résolvaient pas sans ça) ; renommage MPPT 1/MPPT 2 → MPPT1/MPPT2
 - **v1.3.0** (2026-08-28) - Flow d'options (modifier IP/intervalle de scan sans recréer l'intégration), numéro de série normalisé en majuscules, traductions d'entités correctement câblées (noms adaptés à la langue de HA), correction des messages d'erreur du formulaire de configuration, migration réseau vers `aiohttp` (session partagée HA au lieu de threads bloquants), nettoyage interne (dédoublonnage `device_info`, suppression de code mort)
+- **v1.3.2** (2026-08-28) - Capteur `mode` passé en type énuméré (`sensor.enum`) : seules `WaitMode`/`CheckMode`/`NormalMode` sont des valeurs valides, traduites en FR/EN ; il repasse à "Inconnu" à chaque erreur de requête (reflète uniquement le dernier poll réussi, plus de valeur inventée type "Offline"). `prod_auj`/`prod_total` gardent leur dernière valeur connue en cas d'erreur de requête au lieu de retomber à 0 (évite de fausser les statistiques long terme)
 - **v1.2.2** (2026-07-22) - Ajout de l'icône personnalisée pour HACS
 - **v1.2.1** (2026-07-22) - Ajout du service refresh_all pour actualiser tous les onduleurs
 - **v1.2.0** (2026-07-22) - Ajout des capteurs tension/courant MPPT et métriques onduleur

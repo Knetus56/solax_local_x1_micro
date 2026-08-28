@@ -21,6 +21,7 @@ class SolaxSensorDescription:
     device_class: SensorDeviceClass | None
     entity_category: EntityCategory | None = None
     state_class: SensorStateClass | None = None
+    options: list[str] | None = None
 
 
 SENSOR_DESCRIPTIONS: tuple[SolaxSensorDescription, ...] = (
@@ -38,7 +39,13 @@ SENSOR_DESCRIPTIONS: tuple[SolaxSensorDescription, ...] = (
     SolaxSensorDescription("temp", UnitOfTemperature.CELSIUS, SensorDeviceClass.TEMPERATURE, state_class=SensorStateClass.MEASUREMENT),
     SolaxSensorDescription("prod_auj", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, state_class=SensorStateClass.TOTAL_INCREASING),
     SolaxSensorDescription("prod_total", UnitOfEnergy.KILO_WATT_HOUR, SensorDeviceClass.ENERGY, state_class=SensorStateClass.TOTAL_INCREASING),
-    SolaxSensorDescription("mode", None, None, entity_category=EntityCategory.DIAGNOSTIC),
+    SolaxSensorDescription(
+        "mode",
+        None,
+        SensorDeviceClass.ENUM,
+        entity_category=EntityCategory.DIAGNOSTIC,
+        options=["WaitMode", "CheckMode", "NormalMode"],
+    ),
     SolaxSensorDescription("ip", None, None, entity_category=EntityCategory.DIAGNOSTIC),
     SolaxSensorDescription("num_inverter", None, None, entity_category=EntityCategory.DIAGNOSTIC),
 )
@@ -68,6 +75,7 @@ class SolaxSensor(CoordinatorEntity[SolaxDataUpdateCoordinator], SensorEntity):
         self._attr_native_unit_of_measurement = description.unit
         self._attr_entity_category = description.entity_category
         self._attr_state_class = description.state_class
+        self._attr_options = description.options
         self._attr_device_info = coordinator.device_info
 
     @property
