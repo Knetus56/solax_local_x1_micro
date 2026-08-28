@@ -58,7 +58,7 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     # drop to 0 when a poll fails to produce a fresh reading (that would
     # corrupt long-term statistics) - keep the last known value instead.
     # prod_auj (today's production) gets the same treatment EXCEPT across
-    # a day change, see _async_update_data below. "mode" is not part of
+    # a day change, see _apply_persistence below. "mode" is not part of
     # this list: it reflects only what the last query actually returned,
     # so it goes back to None/unknown on any request error.
     _PERSIST_LAST_VALUE_KEYS = ("prod_auj", "prod_total")
@@ -75,6 +75,31 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         now = dt_util.utcnow()
         return not is_up(self.hass, now - _NIGHT_MARGIN) and not is_up(self.hass, now + _NIGHT_MARGIN)
 
+    def _apply_persistence(self, data: dict[str, Any]) -> None:
+        """Fill in values this poll didn't produce with the last known ones.
+
+        Covers _PERSIST_LAST_VALUE_KEYS (see docstring above). prod_auj is
+        the one exception within that list: it resets to 0 instead of
+        carrying over once the local calendar day has changed since the
+        last known value, so it never keeps showing yesterday's total
+        past midnight.
+        """
+        if self.data is None:
+            return
+
+        prod_auj_persisted = data.get("prod_auj") is None
+        for key in self._PERSIST_LAST_VALUE_KEYS:
+            if data.get(key) is None:
+                data[key] = self.data.get(key)
+
+        if prod_auj_persisted:
+            previous_update = self.data.get("last_update")
+            if (
+                previous_update is not None
+                and dt_util.as_local(previous_update).date() != dt_util.now().date()
+            ):
+                data["prod_auj"] = 0.0
+
     async def _async_update_data(self) -> dict[str, Any]:
         try:
             if self._is_solidly_night():
@@ -82,25 +107,7 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 data = offline_state(self.host, self.serial)
             else:
                 data = await fetch_inverter_state(self.session, self.host, self.serial)
-            if self.data is not None:
-                prod_auj_persisted = data.get("prod_auj") is None
-                for key in self._PERSIST_LAST_VALUE_KEYS:
-                    if data.get(key) is None:
-                        data[key] = self.data.get(key)
-
-                # prod_auj must never keep showing yesterday's total past
-                # midnight, even while there's no fresh reading (e.g. still
-                # asleep at night): once the local calendar day has changed
-                # since the last known value, reset it to 0 instead of
-                # carrying it over.
-                if prod_auj_persisted:
-                    previous_update = self.data.get("last_update")
-                    if (
-                        previous_update is not None
-                        and dt_util.as_local(previous_update).date() != dt_util.now().date()
-                    ):
-                        data["prod_auj"] = 0.0
-
+            self._apply_persistence(data)
             data["last_update"] = datetime.now(timezone.utc)
             return data
         except Exception as err:  # pragma: no cover - defensive path

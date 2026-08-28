@@ -176,6 +176,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ## 📦 Versions
 
+- **v1.3.6** (2026-08-28) - Refactor interne de `coordinator.py` : la logique de persistance des valeurs (`prod_auj`/`prod_total`, reset à minuit) est extraite dans une méthode dédiée `_apply_persistence()`. Aucun changement de comportement, juste plus lisible
 - **v1.3.5** (2026-08-28) - Ajout d'une CI GitHub Actions (`hassfest` + validation Python/JSON, voir section suivante). Valeurs du capteur `mode` passées en snake_case minuscule (`wait_mode`/`check_mode`/`normal_mode` au lieu de `WaitMode`/`CheckMode`/`NormalMode`) pour respecter le schéma officiel de traduction HA (`hassfest` l'exigeait) — sans impact visible : les libellés affichés restent identiques
 - **v1.3.4** (2026-08-28) - `prod_auj` (production du jour) repasse automatiquement à 0 dès le changement de jour calendaire, même sans nouvelle donnée réelle (nuit, erreur réseau) — évite d'afficher encore la production d'hier après minuit. `prod_total` continue de persister normalement (compteur à vie, jamais réinitialisé)
 - **v1.3.3** (2026-08-28) - Pause nocturne automatique basée sur `sun.sun` (marge d'1h autour du lever/coucher réel) : plus de requête réseau inutile pendant la nuit quand l'onduleur a coupé son Wi-Fi. Se désactive proprement si l'entité `sun.sun` est absente
