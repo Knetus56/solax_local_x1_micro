@@ -54,11 +54,13 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "connections": {("ip", self.host)},
         }
 
-    # Cumulative energy counters must never appear to drop to 0 when a poll
-    # fails to produce a fresh reading (that would corrupt long-term
-    # statistics) - keep the last known value instead. "mode" is not part
-    # of this list: it reflects only what the last query actually
-    # returned, so it goes back to None/unknown on any request error.
+    # prod_total is a lifetime cumulative counter: it must never appear to
+    # drop to 0 when a poll fails to produce a fresh reading (that would
+    # corrupt long-term statistics) - keep the last known value instead.
+    # prod_auj (today's production) gets the same treatment EXCEPT across
+    # a day change, see _async_update_data below. "mode" is not part of
+    # this list: it reflects only what the last query actually returned,
+    # so it goes back to None/unknown on any request error.
     _PERSIST_LAST_VALUE_KEYS = ("prod_auj", "prod_total")
 
     def _is_solidly_night(self) -> bool:
@@ -81,9 +83,24 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             else:
                 data = await fetch_inverter_state(self.session, self.host, self.serial)
             if self.data is not None:
+                prod_auj_persisted = data.get("prod_auj") is None
                 for key in self._PERSIST_LAST_VALUE_KEYS:
                     if data.get(key) is None:
                         data[key] = self.data.get(key)
+
+                # prod_auj must never keep showing yesterday's total past
+                # midnight, even while there's no fresh reading (e.g. still
+                # asleep at night): once the local calendar day has changed
+                # since the last known value, reset it to 0 instead of
+                # carrying it over.
+                if prod_auj_persisted:
+                    previous_update = self.data.get("last_update")
+                    if (
+                        previous_update is not None
+                        and dt_util.as_local(previous_update).date() != dt_util.now().date()
+                    ):
+                        data["prod_auj"] = 0.0
+
             data["last_update"] = datetime.now(timezone.utc)
             return data
         except Exception as err:  # pragma: no cover - defensive path
