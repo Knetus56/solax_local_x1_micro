@@ -47,9 +47,9 @@
       "mode": {
         "name": "Mode",
         "state": {
-          "WaitMode": "Attente",
-          "CheckMode": "Vérification",
-          "NormalMode": "Normal"
+          "wait_mode": "Attente",
+          "check_mode": "Vérification",
+          "normal_mode": "Normal"
         }
       },
       "ip": { "name": "IP" },

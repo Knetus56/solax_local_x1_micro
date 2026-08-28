@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Catches drift caused by upstream Home Assistant changes even without
+    # a new commit here (hassfest rules evolve over time).
+    - cron: "0 3 * * *"
+
+jobs:
+  hassfest:
+    name: Hassfest validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: home-assistant/actions/hassfest@master
+
+  python-and-json:
+    name: Python syntax & JSON validity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Compile Python files
+        run: python -m py_compile custom_components/solax_local/*.py
+
+      - name: Validate JSON files
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          root = pathlib.Path("custom_components/solax_local")
+          files = sorted(root.rglob("*.json"))
+          ok = True
+          for path in files:
+              try:
+                  json.loads(path.read_text(encoding="utf-8"))
+                  print(f"OK    {path}")
+              except Exception as exc:  # noqa: BLE001
+                  print(f"FAIL  {path}: {exc}")
+                  ok = False
+          sys.exit(0 if ok else 1)
+          PY
+
+      - name: Check entity translation keys are in sync
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import re
+          import sys
+
+          root = pathlib.Path("custom_components/solax_local")
+          sensor_src = (root / "sensor.py").read_text(encoding="utf-8")
+          py_keys = set(
+              re.findall(r'SolaxSensorDescription\(\s*\n?\s*"([a-z0-9_]+)"', sensor_src)
+          )
+
+          ok = True
+          for name in ("strings.json", "translations/en.json", "translations/fr.json"):
+              data = json.loads((root / name).read_text(encoding="utf-8"))
+              json_keys = set(data.get("entity", {}).get("sensor", {}).keys())
+              missing = py_keys - json_keys
+              extra = json_keys - py_keys
+              if missing or extra:
+                  ok = False
+                  print(f"MISMATCH in {name}: missing={missing or 'none'} extra={extra or 'none'}")
+              else:
+                  print(f"OK    {name} ({len(json_keys)} sensor keys match sensor.py)")
+
+          sys.exit(0 if ok else 1)
+          PY

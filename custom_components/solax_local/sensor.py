@@ -44,7 +44,7 @@ SENSOR_DESCRIPTIONS: tuple[SolaxSensorDescription, ...] = (
         None,
         SensorDeviceClass.ENUM,
         entity_category=EntityCategory.DIAGNOSTIC,
-        options=["WaitMode", "CheckMode", "NormalMode"],
+        options=["wait_mode", "check_mode", "normal_mode"],
     ),
     SolaxSensorDescription("ip", None, None, entity_category=EntityCategory.DIAGNOSTIC),
     SolaxSensorDescription("num_inverter", None, None, entity_category=EntityCategory.DIAGNOSTIC),
