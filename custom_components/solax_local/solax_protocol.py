@@ -11,6 +11,14 @@ _LOGGER = logging.getLogger(__name__)
 _REQUEST_TIMEOUT = aiohttp.ClientTimeout(total=5)
 _MODE_NAMES = {0: "wait_mode", 1: "check_mode", 2: "normal_mode"}
 
+# Some firmware variants have been reported to return shorter response
+# packets that omit trailing fields entirely, rather than always the full
+# 112-byte body. 80 bytes is enough to reliably read the serial number
+# (offsets 8-22) and confirm this is our inverter's response; every field
+# beyond that is read defensively via _u16_or/_u32_or instead of assuming
+# they're present.
+_MIN_PAYLOAD_LENGTH = 80
+
 
 def crc16(data: bytes, length: int) -> tuple[int, int]:
     poly = 0x8005
@@ -122,6 +130,20 @@ def _u32(data: bytes, offset: int) -> int:
     )
 
 
+def _u16_or(data: bytes, offset: int, default: int | None = 0) -> int | None:
+    """Like _u16, but returns `default` when the field is past the end of `data`."""
+    if len(data) < offset + 2:
+        return default
+    return _u16(data, offset)
+
+
+def _u32_or(data: bytes, offset: int, default: int | None = 0) -> int | None:
+    """Like _u32, but returns `default` when the field is past the end of `data`."""
+    if len(data) < offset + 4:
+        return default
+    return _u32(data, offset)
+
+
 def _decode_payload(payload: str) -> bytes:
     return base64.b64decode(payload)
 
@@ -130,7 +152,7 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
     decoded = _decode_payload(payload)
     _LOGGER.debug("parse_data: decoded length=%d", len(decoded))
 
-    if len(decoded) < 112:
+    if len(decoded) < _MIN_PAYLOAD_LENGTH:
         _LOGGER.debug("parse_data: payload too short (%d bytes), marking offline", len(decoded))
         return offline_state(host, serial)
 
@@ -138,33 +160,48 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
     serial_inverter = serial_bytes.decode("ascii", errors="ignore")
     _LOGGER.debug("parse_data: packet type=0x%02X serial_in_packet=%r expected=%r", decoded[2], serial_inverter, serial)
 
-    if decoded[2] != 0x70 or serial_inverter != serial:
-        _LOGGER.debug("parse_data: packet mismatch (type=0x%02X serial=%r), marking offline", decoded[2], serial_inverter)
+    # Different firmware variants have been seen returning packet types
+    # other than 0x70 for this same data layout, so only the serial - what
+    # actually identifies this as our inverter's response - is checked.
+    if serial_inverter != serial:
+        _LOGGER.debug("parse_data: serial mismatch (got %r), marking offline", serial_inverter)
         return offline_state(host, serial)
 
-    mode = _u16(decoded, 90)
-    status = 1 if mode == 2 else 0
-    # Only wait/check/normal are valid mode values; any other register
-    # value has no place here and stays None (sensor shows unavailable).
-    mode_name = _MODE_NAMES.get(mode)
+    # mode/prod_auj/prod_total (registers 90-101) may be missing from a
+    # shorter-than-usual packet. Same rule as offline_state: no real value
+    # to show means None (coordinator persistence keeps the last known
+    # value), not a fabricated 0 - especially for the cumulative counters,
+    # see coordinator.py.
+    if len(decoded) >= 92:
+        mode = _u16(decoded, 90)
+        status = 1 if mode == 2 else 0
+        # Only wait/check/normal are valid mode values; any other register
+        # value has no place here and stays None (sensor shows unavailable).
+        mode_name = _MODE_NAMES.get(mode)
+    else:
+        status = 0
+        mode_name = None
+
+    prod_total_raw = _u32_or(decoded, 92, default=None)
+    prod_auj_raw = _u16_or(decoded, 96, default=None)
 
     result = {
         "online": True,
         "status": status,
         "mode": mode_name,
-        "mppt1_puissance": _u16(decoded, 86),
-        "mppt2_puissance": _u16(decoded, 88),
-        "mppt1_voltage": _u16(decoded, 78) / 10.0,
-        "mppt2_voltage": _u16(decoded, 80) / 10.0,
-        "mppt1_intensite": _u16(decoded, 82) / 10.0,
-        "mppt2_intensite": _u16(decoded, 84) / 10.0,
-        "inverter_voltage": _u16(decoded, 70) / 10.0,
-        "inverter_intensite": _u16(decoded, 72) / 10.0,
-        "inverter_puissance": _u16(decoded, 74),
-        "inverter_freq": _u16(decoded, 76) / 100.0,
-        "prod_auj": round(_u16(decoded, 96) / 10.0, 2),
-        "prod_total": round(_u32(decoded, 92) / 10.0, 2),
-        "temp": _u16(decoded, 100),
+        "mppt1_puissance": _u16_or(decoded, 86),
+        "mppt2_puissance": _u16_or(decoded, 88),
+        "mppt1_voltage": _u16_or(decoded, 78) / 10.0,
+        "mppt2_voltage": _u16_or(decoded, 80) / 10.0,
+        "mppt1_intensite": _u16_or(decoded, 82) / 10.0,
+        "mppt2_intensite": _u16_or(decoded, 84) / 10.0,
+        "inverter_voltage": _u16_or(decoded, 70) / 10.0,
+        "inverter_intensite": _u16_or(decoded, 72) / 10.0,
+        "inverter_puissance": _u16_or(decoded, 74),
+        "inverter_freq": _u16_or(decoded, 76) / 100.0,
+        "prod_auj": round(prod_auj_raw / 10.0, 2) if prod_auj_raw is not None else None,
+        "prod_total": round(prod_total_raw / 10.0, 2) if prod_total_raw is not None else None,
+        "temp": _u16_or(decoded, 100),
         "ip": host,
         "num_inverter": serial,
     }
@@ -185,9 +222,12 @@ async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial
             raw = await response.read()
             body = raw.decode("ascii", errors="ignore")
             _LOGGER.debug("fetch_inverter_state: HTTP %d body_len=%d", response.status, len(body))
-            if response.status == 200 and len(body) >= 150:
+            # Length is validated once, post-decode, in parse_data
+            # (_MIN_PAYLOAD_LENGTH) rather than approximated here on the
+            # base64 text - avoids two thresholds drifting out of sync.
+            if response.status == 200:
                 return parse_data(body.replace("\n", ""), host, serial)
-            _LOGGER.debug("fetch_inverter_state: response too short or bad status, marking offline")
+            _LOGGER.debug("fetch_inverter_state: bad status, marking offline")
     except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
         _LOGGER.debug("fetch_inverter_state: request failed: %s", exc)
 
