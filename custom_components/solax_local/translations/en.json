@@ -1,9 +1,9 @@
 {
-  "title": "SolaX Local",
+  "title": "SolaX Local X1 Micro",
   "config": {
     "step": {
       "user": {
-        "title": "Configure SolaX Local",
+        "title": "Configure SolaX Local X1 Micro",
         "description": "Add a local SolaX inverter.",
         "data": {
           "host": "Host",
@@ -20,7 +20,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Update SolaX Local",
+        "title": "Update SolaX Local X1 Micro",
         "description": "Update the inverter's host or scan interval.",
         "data": {
           "host": "Host",

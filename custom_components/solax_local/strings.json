@@ -1,9 +1,9 @@
 {
-  "title": "SolaX Local",
+  "title": "SolaX Local X1 Micro",
   "config": {
     "step": {
       "user": {
-        "title": "Configurer SolaX Local",
+        "title": "Configurer SolaX Local X1 Micro",
         "description": "Ajoutez un onduleur SolaX local.",
         "data": {
           "host": "Hôte",
@@ -20,7 +20,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Modifier SolaX Local",
+        "title": "Modifier SolaX Local X1 Micro",
         "description": "Modifiez l'hôte ou l'intervalle de scan de l'onduleur.",
         "data": {
           "host": "Hôte",

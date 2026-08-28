@@ -1,9 +1,9 @@
 {
-  "title": "SolaX Local",
+  "title": "SolaX Local X1 Micro",
   "config": {
     "step": {
       "user": {
-        "title": "SolaX Local instellen",
+        "title": "SolaX Local X1 Micro instellen",
         "description": "Voeg een lokale SolaX-omvormer toe.",
         "data": {
           "host": "Host",
@@ -20,7 +20,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "SolaX Local wijzigen",
+        "title": "SolaX Local X1 Micro wijzigen",
         "description": "Wijzig de host of het scaninterval van de omvormer.",
         "data": {
           "host": "Host",

@@ -1,4 +1,4 @@
-"""Config flow for the SolaX Local integration."""
+"""Config flow for the SolaX Local X1 Micro integration."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 
 
 class SolaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for SolaX Local."""
+    """Handle a config flow for SolaX Local X1 Micro."""
 
     VERSION = 1
 
@@ -97,7 +97,7 @@ class SolaxConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class SolaxOptionsFlow(config_entries.OptionsFlow):
-    """Handle options for an existing SolaX Local entry (host / scan interval)."""
+    """Handle options for an existing SolaX Local X1 Micro entry (host / scan interval)."""
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None

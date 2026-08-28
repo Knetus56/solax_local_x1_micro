@@ -1,4 +1,4 @@
-# SolaX Local - Intégration Home Assistant
+# SolaX Local X1 Micro - Intégration Home Assistant
 
 [![CI](https://github.com/Knetus56/solax_local/actions/workflows/ci.yml/badge.svg)](https://github.com/Knetus56/solax_local/actions/workflows/ci.yml)
 
@@ -58,7 +58,7 @@ service: solax_local.refresh_all
 
 **Ou dans les outils de développement** :
 1. **Outils de développement** > **Services**
-2. Sélectionner `SolaX Local: Refresh all inverters`
+2. Sélectionner `SolaX Local X1 Micro: Refresh all inverters`
 3. Cliquer **Exécuter**
 
 ## 🚀 Installation
@@ -79,7 +79,7 @@ Ou manuellement :
 2. Aller à **HACS** > **Intégrations**
 3. Cliquer sur le **menu** (⋯) > **Dépôts personnalisés**
 4. Ajouter l'URL: `https://github.com/Knetus56/solax_local`
-5. Chercher "SolaX Local"
+5. Chercher "SolaX Local X1 Micro"
 6. Cliquer **Installer**
 7. Redémarrer Home Assistant
 
@@ -95,7 +95,7 @@ Ou manuellement :
 
 1. **Paramètres** > **Appareils et services** > **Intégrations**
 2. Cliquer **Créer une intégration**
-3. Chercher et sélectionner **SolaX Local**
+3. Chercher et sélectionner **SolaX Local X1 Micro**
 4. Remplir les informations :
    - **IP** : Adresse IP de l'onduleur (ex: `192.168.1.100`)
    - **Type d'onduleur** : Sélectionner le modèle
@@ -109,7 +109,7 @@ Ou manuellement :
 Il n'est plus nécessaire de supprimer/recréer l'intégration pour changer l'adresse IP ou l'intervalle de scan :
 
 1. **Paramètres** > **Appareils et services**
-2. Repérer la carte **SolaX Local** > cliquer **Configurer** (icône ⚙️)
+2. Repérer la carte **SolaX Local X1 Micro** > cliquer **Configurer** (icône ⚙️)
 3. Mettre à jour l'**hôte** et/ou l'**intervalle de scan**
 4. Valider — l'intégration se recharge automatiquement avec les nouvelles valeurs
 
