@@ -44,7 +44,14 @@
       "prod_auj": { "name": "Daily production" },
       "prod_total": { "name": "Total production" },
       "temp": { "name": "Temperature" },
-      "mode": { "name": "Mode" },
+      "mode": {
+        "name": "Mode",
+        "state": {
+          "WaitMode": "Wait",
+          "CheckMode": "Check",
+          "NormalMode": "Normal"
+        }
+      },
       "ip": { "name": "IP" },
       "num_inverter": { "name": "Serial number" },
       "last_update": { "name": "Last update" }
