@@ -1,6 +1,6 @@
 # SolaX Local X1 Micro - Intégration Home Assistant
 
-[![CI](https://github.com/Knetus56/solax_local/actions/workflows/ci.yml/badge.svg)](https://github.com/Knetus56/solax_local/actions/workflows/ci.yml)
+[![CI](https://github.com/Knetus56/solax_local_x1_micro/actions/workflows/ci.yml/badge.svg)](https://github.com/Knetus56/solax_local_x1_micro/actions/workflows/ci.yml)
 
 Une intégration [Home Assistant](https://www.home-assistant.io/) pour contrôler et monitorer votre onduleur **SolaX** en local via le protocole HTTP.
 
@@ -72,20 +72,20 @@ service: solax_local.refresh_all
 ### Via HACS (recommandé)
 
 **Lien direct HACS** : 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/Knetus56/solax_local&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/Knetus56/solax_local_x1_micro&category=integration)
 
 Ou manuellement :
 1. Ouvrir Home Assistant
 2. Aller à **HACS** > **Intégrations**
 3. Cliquer sur le **menu** (⋯) > **Dépôts personnalisés**
-4. Ajouter l'URL: `https://github.com/Knetus56/solax_local`
+4. Ajouter l'URL: `https://github.com/Knetus56/solax_local_x1_micro`
 5. Chercher "SolaX Local X1 Micro"
 6. Cliquer **Installer**
 7. Redémarrer Home Assistant
 
 ### Installation manuelle
 
-1. Télécharger la dernière [version](https://github.com/Knetus56/solax_local/releases)
+1. Télécharger la dernière [version](https://github.com/Knetus56/solax_local_x1_micro/releases)
 2. Extraire dans `custom_components/solax_local/`
 3. Redémarrer Home Assistant
 

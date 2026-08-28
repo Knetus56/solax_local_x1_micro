@@ -4,9 +4,9 @@
   "codeowners": ["@Knetus56"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/Knetus56/solax_local",
+  "documentation": "https://github.com/Knetus56/solax_local_x1_micro",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Knetus56/solax_local/issues",
+  "issue_tracker": "https://github.com/Knetus56/solax_local_x1_micro/issues",
   "requirements": [],
   "version": "1.4.2"
 }
