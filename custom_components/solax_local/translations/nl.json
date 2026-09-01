@@ -9,7 +9,7 @@
           "host": "Host",
           "inverter_type": "Omvormer type",
           "serial": "Serienummer",
-          "scan_interval": "Scan interval (seconden)"
+          "scan_interval": "Controlefrequentie (seconden)"
         }
       }
     },
@@ -21,10 +21,10 @@
     "step": {
       "init": {
         "title": "SolaX Local X1 Micro wijzigen",
-        "description": "Wijzig de host of de scan interval van de omvormer.",
+        "description": "Wijzig de host of de controlefrequentie van de omvormer.",
         "data": {
           "host": "Host",
-          "scan_interval": "Scan interval (seconden)"
+          "scan_interval": "Controlefrequentie (seconden)"
         }
       }
     }
