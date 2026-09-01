@@ -3,13 +3,13 @@
   "config": {
     "step": {
       "user": {
-        "title": "SolaX Local X1 Micro instellen",
+        "title": "Configureer SolaX Local X1 Micro",
         "description": "Voeg een lokale SolaX-omvormer toe.",
         "data": {
           "host": "Host",
-          "inverter_type": "Omvormertype",
+          "inverter_type": "Omvormer type",
           "serial": "Serienummer",
-          "scan_interval": "Scaninterval (seconden)"
+          "scan_interval": "Scan interval (seconden)"
         }
       }
     },
@@ -21,27 +21,27 @@
     "step": {
       "init": {
         "title": "SolaX Local X1 Micro wijzigen",
-        "description": "Wijzig de host of het scaninterval van de omvormer.",
+        "description": "Wijzig de host of de scan interval van de omvormer.",
         "data": {
           "host": "Host",
-          "scan_interval": "Scaninterval (seconden)"
+          "scan_interval": "Scan interval (seconden)"
         }
       }
     }
   },
   "entity": {
     "sensor": {
-      "mppt1_puissance": { "name": "MPPT1-vermogen" },
-      "mppt1_voltage": { "name": "MPPT1-spanning" },
-      "mppt1_intensite": { "name": "MPPT1-stroom" },
-      "mppt2_puissance": { "name": "MPPT2-vermogen" },
-      "mppt2_voltage": { "name": "MPPT2-spanning" },
-      "mppt2_intensite": { "name": "MPPT2-stroom" },
-      "inverter_voltage": { "name": "Omvormerspanning" },
-      "inverter_intensite": { "name": "Omvormerstroom" },
-      "inverter_puissance": { "name": "Omvormervermogen" },
-      "inverter_freq": { "name": "Omvormerfrequentie" },
-      "prod_auj": { "name": "Productie vandaag" },
+      "mppt1_puissance": { "name": "MPPT1 vermogen" },
+      "mppt1_voltage": { "name": "MPPT1 spanning" },
+      "mppt1_intensite": { "name": "MPPT1 stroom" },
+      "mppt2_puissance": { "name": "MPPT2 vermogen" },
+      "mppt2_voltage": { "name": "MPPT2 spanning" },
+      "mppt2_intensite": { "name": "MPPT2 stroom" },
+      "inverter_voltage": { "name": "Omvormer spanning" },
+      "inverter_intensite": { "name": "Omvormer stroom" },
+      "inverter_puissance": { "name": "Omvormer vermogen" },
+      "inverter_freq": { "name": "Omvormer frequentie" },
+      "prod_auj": { "name": "Dagelijkse productie" },
       "prod_total": { "name": "Totale productie" },
       "temp": { "name": "Temperatuur" },
       "mode": {
