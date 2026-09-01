@@ -81,7 +81,7 @@ service: solax_local.refresh_all
 **En attendant cette validation** (ou pour suivre une branche/version précise), ajout en dépôt personnalisé :
 
 **Lien direct HACS** : 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs/?repository=https://github.com/Knetus56/solax_local_x1_micro&category=integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Knetus56&repository=solax_local_x1_micro&category=integration)
 
 Ou manuellement :
 1. Ouvrir Home Assistant
