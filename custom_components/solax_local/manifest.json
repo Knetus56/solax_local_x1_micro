@@ -8,5 +8,5 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/Knetus56/solax_local_x1_micro/issues",
   "requirements": [],
-  "version": "1.4.5"
+  "version": "1.4.6"
 }

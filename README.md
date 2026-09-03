@@ -185,7 +185,7 @@ Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner 
 
 ## 📦 Versions
 
-- **v1.4.5** (2026-09-02) - `prod_auj`/`prod_total` survivent maintenant aussi à un redémarrage de Home Assistant survenant pendant une coupure API : la persistance de la dernière valeur connue (`coordinator._apply_persistence`) ne vivait qu'en mémoire côté coordinator, donc un redémarrage HA pendant une coupure la perdait. Ces deux capteurs utilisent désormais `RestoreSensor` pour restaurer la dernière valeur connue au démarrage tant qu'aucune lecture fraîche n'est arrivée (avec le même reset à minuit que `prod_auj` applique déjà en fonctionnement normal) - cf. issue #16
+- **v1.4.6** (2026-09-03) - `prod_auj` ne retombe plus à 0 en cours de journée même sur une lecture "réussie" : certains onduleurs SolaX renvoient un paquet valide avec le registre à 0 en quittant `normal_mode` (typiquement au crépuscule), ce qui était jusqu'ici accepté comme une vraie valeur et écrasait le total du jour avant minuit. `_apply_persistence()` ignore désormais toute baisse de `prod_auj` tant que la date n'a pas changé - seul un vrai changement de jour calendaire peut encore le remettre à 0. `prod_total` (compteur à vie) n'est pas concerné - cf. issue #16
 
 
 ## 🙏 Remerciements
