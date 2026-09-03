@@ -58,9 +58,15 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     # drop to 0 when a poll fails to produce a fresh reading (that would
     # corrupt long-term statistics) - keep the last known value instead.
     # prod_auj (today's production) gets the same treatment EXCEPT across
-    # a day change, see _apply_persistence below. "mode" is not part of
-    # this list: it reflects only what the last query actually returned,
-    # so it goes back to None/unknown on any request error.
+    # a day change, see _apply_persistence below. It also never accepts a
+    # same-day drop even from a "successful" poll: some SolaX firmware
+    # reports a genuine (non-None) 0 for this register once the inverter
+    # leaves normal_mode at dusk, which would otherwise look like a real
+    # fresh reading - see
+    # https://github.com/Knetus56/solax_local_x1_micro/issues/16.
+    # "mode" is not part of this list: it reflects only what the last
+    # query actually returned, so it goes back to None/unknown on any
+    # request error.
     _PERSIST_LAST_VALUE_KEYS = ("prod_auj", "prod_total")
 
     def _is_solidly_night(self) -> bool:
@@ -82,7 +88,9 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         the one exception within that list: it resets to 0 instead of
         carrying over once the local calendar day has changed since the
         last known value, so it never keeps showing yesterday's total
-        past midnight.
+        past midnight. Conversely, within the same day it never accepts a
+        drop even from a poll that did return a value (see class docstring
+        above) - only a day change is allowed to lower it.
         """
         if self.data is None:
             return
@@ -92,13 +100,19 @@ class SolaxDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             if data.get(key) is None:
                 data[key] = self.data.get(key)
 
+        previous_update = self.data.get("last_update")
+        same_day = (
+            previous_update is not None
+            and dt_util.as_local(previous_update).date() == dt_util.now().date()
+        )
+
         if prod_auj_persisted:
-            previous_update = self.data.get("last_update")
-            if (
-                previous_update is not None
-                and dt_util.as_local(previous_update).date() != dt_util.now().date()
-            ):
+            if not same_day:
                 data["prod_auj"] = 0.0
+        else:
+            previous_prod_auj = self.data.get("prod_auj")
+            if same_day and previous_prod_auj is not None and data["prod_auj"] < previous_prod_auj:
+                data["prod_auj"] = previous_prod_auj
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
