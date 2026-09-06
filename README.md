@@ -1,193 +1,193 @@
-# SolaX Local X1 Micro - Intégration Home Assistant
+# SolaX Local X1 Micro - Home Assistant Integration
 
 [![CI](https://github.com/Knetus56/solax_local_x1_micro/actions/workflows/ci.yml/badge.svg)](https://github.com/Knetus56/solax_local_x1_micro/actions/workflows/ci.yml)
 
-Une intégration [Home Assistant](https://www.home-assistant.io/) pour contrôler et monitorer votre onduleur **SolaX** en local via le protocole HTTP.
+A [Home Assistant](https://www.home-assistant.io/) integration to control and monitor your **SolaX** inverter locally over HTTP.
 
-## 🌟 Fonctionnalités
+## 🌟 Features
 
-- 📊 **Monitoring en temps réel** : Puissance MPPT, production d'énergie, température
-- 🔄 **Contrôle de l'onduleur** : Allumage/extinction via switch
-- 📈 **Tracking de production** : Production du jour et cumulative
-- 🕐 **Historique** : Timestamp de la dernière mise à jour
-- 🌍 **Support multi-inverter** : X1 Micro 2-in-1
-- 🔐 **Connexion locale** : Pas de cloud, entièrement en local
-- 🇫🇷 **Interface localisée** : Français, anglais et néerlandais (traduction complète des entités selon la langue de Home Assistant)
-- ⚙️ **Modifiable après coup** : changez l'adresse IP ou l'intervalle de scan sans recréer l'intégration
-- 🌙 **Pause nocturne automatique** : pas de requête inutile pendant la nuit (basé sur le lever/coucher du soleil, marge d'1h)
+- 📊 **Real-time monitoring**: MPPT power, energy production, temperature
+- 🔄 **Inverter control**: turn on/off via a switch
+- 📈 **Production tracking**: daily and cumulative production
+- 🕐 **History**: last-update timestamp
+- 🌍 **Multi-inverter support**: X1 Micro 2-in-1
+- 🔐 **Local connection**: no cloud, fully local
+- 🇫🇷 **Localized UI**: French, English and Dutch (entities fully translated according to Home Assistant's language)
+- ⚙️ **Editable afterwards**: change the IP address or the poll interval without recreating the integration
+- 🌙 **Automatic night pause**: no unnecessary requests overnight (based on sunset/sunrise, 1h margin)
 
-## 📋 Capteurs (Sensors)
+## 📋 Sensors
 
-| Capteur | Description | Unité |
+| Sensor | Description | Unit |
 |---------|-------------|-------|
-| `mppt1_puissance` | Puissance MPPT 1 | W |
-| `mppt1_voltage` | Tension MPPT 1 | V |
-| `mppt1_intensite` | Courant MPPT 1 | A |
-| `mppt2_puissance` | Puissance MPPT 2 | W |
-| `mppt2_voltage` | Tension MPPT 2 | V |
-| `mppt2_intensite` | Courant MPPT 2 | A |
-| `inverter_voltage` | Tension de sortie onduleur | V |
-| `inverter_intensite` | Courant de sortie onduleur | A |
-| `inverter_puissance` | Puissance de sortie onduleur | W |
-| `inverter_freq` | Fréquence onduleur | Hz |
-| `temp` | Température de l'onduleur | °C |
-| `prod_auj` | Production du jour | kWh |
-| `prod_total` | Production totale cumulative | kWh |
-| `mode` | Mode de fonctionnement | WaitMode/CheckMode/NormalMode |
-| `ip` | Adresse IP de l'onduleur | - |
-| `num_inverter` | Numéro de série | - |
-| `last_update` | Dernière mise à jour | timestamp |
+| `mppt1_puissance` | MPPT 1 power | W |
+| `mppt1_voltage` | MPPT 1 voltage | V |
+| `mppt1_intensite` | MPPT 1 current | A |
+| `mppt2_puissance` | MPPT 2 power | W |
+| `mppt2_voltage` | MPPT 2 voltage | V |
+| `mppt2_intensite` | MPPT 2 current | A |
+| `inverter_voltage` | Inverter output voltage | V |
+| `inverter_intensite` | Inverter output current | A |
+| `inverter_puissance` | Inverter output power | W |
+| `inverter_freq` | Inverter frequency | Hz |
+| `temp` | Inverter temperature | °C |
+| `prod_auj` | Today's production | kWh |
+| `prod_total` | Cumulative total production | kWh |
+| `mode` | Operating mode | WaitMode/CheckMode/NormalMode |
+| `ip` | Inverter IP address | - |
+| `num_inverter` | Serial number | - |
+| `last_update` | Last update | timestamp |
 
-## 🔌 Entités de Contrôle
+## 🔌 Control Entities
 
-- **Binary Sensor** : État en ligne/hors ligne
-- **Switch** : Allumage/extinction de l'onduleur
+- **Binary Sensor**: online/offline status
+- **Switch**: turn the inverter on/off
 
 ## 🔄 Services
 
-### Actualiser tous les onduleurs
+### Refresh all inverters
 
 Service: `solax_local.refresh_all`
 
-Force la mise à jour immédiate de tous les onduleurs configurés sans attendre l'intervalle de scan.
+Forces an immediate update of all configured inverters without waiting for the poll interval.
 
-**Utilisation dans une automatisation** :
+**Usage in an automation**:
 ```yaml
 service: solax_local.refresh_all
 ```
 
-**Ou dans les outils de développement** :
-1. **Outils de développement** > **Services**
-2. Sélectionner `SolaX Local X1 Micro: Refresh all inverters`
-3. Cliquer **Exécuter**
+**Or from Developer Tools**:
+1. **Developer Tools** > **Services**
+2. Select `SolaX Local X1 Micro: Refresh all inverters`
+3. Click **Run**
 
 ## 🚀 Installation
 
-### Prérequis
+### Requirements
 
 - Home Assistant 2023.12+
-- Accès réseau à l'onduleur SolaX
-- Adresse IP et numéro de série de l'onduleur
+- Network access to the SolaX inverter
+- The inverter's IP address and serial number
 
-### Via HACS (recommandé)
+### Via HACS (recommended)
 
-**Une fois l'intégration acceptée dans le store officiel HACS** :
-1. Ouvrir Home Assistant
-2. Aller à **HACS** > **Intégrations** > **Explorer & télécharger**
-3. Chercher "SolaX Local X1 Micro"
-4. Cliquer **Télécharger**
-5. Redémarrer Home Assistant
+**Once the integration is accepted into the official HACS store**:
+1. Open Home Assistant
+2. Go to **HACS** > **Integrations** > **Explore & download**
+3. Search for "SolaX Local X1 Micro"
+4. Click **Download**
+5. Restart Home Assistant
 
-**En attendant cette validation** (ou pour suivre une branche/version précise), ajout en dépôt personnalisé :
+**In the meantime** (or to follow a specific branch/version), add it as a custom repository:
 
-**Lien direct HACS** : 
+**Direct HACS link**:
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Knetus56&repository=solax_local_x1_micro&category=integration)
 
-Ou manuellement :
-1. Ouvrir Home Assistant
-2. Aller à **HACS** > **Intégrations**
-3. Cliquer sur le **menu** (⋯) > **Dépôts personnalisés**
-4. Ajouter l'URL: `https://github.com/Knetus56/solax_local_x1_micro`
-5. Chercher "SolaX Local X1 Micro"
-6. Cliquer **Installer**
-7. Redémarrer Home Assistant
+Or manually:
+1. Open Home Assistant
+2. Go to **HACS** > **Integrations**
+3. Click the **menu** (⋯) > **Custom repositories**
+4. Add the URL: `https://github.com/Knetus56/solax_local_x1_micro`
+5. Search for "SolaX Local X1 Micro"
+6. Click **Install**
+7. Restart Home Assistant
 
-### Installation manuelle
+### Manual installation
 
-1. Télécharger la dernière [version](https://github.com/Knetus56/solax_local_x1_micro/releases)
-2. Extraire dans `custom_components/solax_local/`
-3. Redémarrer Home Assistant
+1. Download the latest [release](https://github.com/Knetus56/solax_local_x1_micro/releases)
+2. Extract into `custom_components/solax_local/`
+3. Restart Home Assistant
 
 ## ⚙️ Configuration
 
-### Via interface Home Assistant
+### Via the Home Assistant UI
 
-1. **Paramètres** > **Appareils et services** > **Intégrations**
-2. Cliquer **Créer une intégration**
-3. Chercher et sélectionner **SolaX Local X1 Micro**
-4. Remplir les informations :
-   - **IP** : Adresse IP de l'onduleur (ex: `192.168.1.100`)
-   - **Type d'onduleur** : Sélectionner le modèle
-   - **Numéro de série** : Numéro de série de l'onduleur
-   - **Intervalle de scan** (optionnel) : Fréquence de mise à jour en secondes (défaut: 300s)
+1. **Settings** > **Devices & services** > **Integrations**
+2. Click **Add integration**
+3. Search for and select **SolaX Local X1 Micro**
+4. Fill in the details:
+   - **IP**: the inverter's IP address (e.g. `192.168.1.100`)
+   - **Inverter type**: select the model
+   - **Serial number**: the inverter's serial number
+   - **Poll interval** (optional): update frequency in seconds (default: 300s)
 
-> Le numéro de série est automatiquement normalisé en majuscules.
+> The serial number is automatically normalized to uppercase.
 
-### Modifier la configuration après installation
+### Changing the configuration after installation
 
-Il n'est plus nécessaire de supprimer/recréer l'intégration pour changer l'adresse IP ou l'intervalle de scan :
+You no longer need to remove/recreate the integration to change the IP address or the poll interval:
 
-1. **Paramètres** > **Appareils et services**
-2. Repérer la carte **SolaX Local X1 Micro** > cliquer **Configurer** (icône ⚙️)
-3. Mettre à jour l'**hôte** et/ou l'**intervalle de scan**
-4. Valider — l'intégration se recharge automatiquement avec les nouvelles valeurs
+1. **Settings** > **Devices & services**
+2. Find the **SolaX Local X1 Micro** card > click **Configure** (⚙️ icon)
+3. Update the **host** and/or the **poll interval**
+4. Submit — the integration reloads automatically with the new values
 
-Le type d'onduleur et le numéro de série restent fixes après la création (ils identifient l'appareil) ; pour les changer, il faut recréer l'intégration.
+The inverter type and serial number stay fixed after creation (they identify the device); recreate the integration to change them.
 
-## 🔧 Configuration avancée
+## 🔧 Advanced configuration
 
-### Intervalle de mise à jour
+### Update interval
 
-Par défaut, l'intégration interroge l'onduleur toutes les **300 secondes** (5 minutes). Vous pouvez l'ajuster lors de la configuration.
+By default, the integration polls the inverter every **300 seconds** (5 minutes). You can adjust it during setup.
 
-### Pause nocturne (basée sur `sun.sun`)
+### Night pause (based on `sun.sun`)
 
-Les onduleurs SolaX coupent leur dongle Wi-Fi la nuit : chaque requête envoyée pendant cette période échoue de toute façon (timeout). L'intégration évite ces appels inutiles en s'appuyant sur l'entité **`sun.sun`**, intégrée nativement à Home Assistant (composant `sun`, quasi toujours présent — calcule le lever/coucher réel du soleil selon la position géographique et le fuseau horaire configurés dans **Paramètres > Système > Général**).
+SolaX inverters turn off their Wi-Fi dongle at night: any request sent during that time fails anyway (timeout). The integration avoids these useless calls by relying on the **`sun.sun`** entity, built into Home Assistant natively (the `sun` component, almost always present — it computes the actual sunrise/sunset based on the geographic position and time zone configured in **Settings > System > General**).
 
-**Comment ça marche** : à chaque cycle de poll, l'intégration vérifie si le soleil est couché depuis plus d'1h *et* le restera pour au moins 1h de plus. Seulement dans ce cas — nuit "installée", loin de toute transition — la requête HTTP est carrément sautée. Cette double vérification (1h avant *et* 1h après l'instant présent) crée naturellement une marge symétrique d'**1 heure** autour du lever et du coucher réels, sans avoir besoin de calculer soi-même les horaires astronomiques :
+**How it works**: on every poll cycle, the integration checks whether the sun has been down for more than 1h *and* will stay down for at least 1h more. Only then — a night "settled in", far from any transition — is the HTTP request skipped outright. This double check (1h before *and* 1h after the current instant) naturally creates a symmetric **1-hour** margin around the actual sunset and sunrise, without having to compute the astronomical times itself:
 
 ```
-                    coucher réel du soleil                lever réel du soleil
+                      actual sunset                        actual sunrise
                             │                                      │
-   ── requêtes normales ────┤── marge 1h ──┤ PAUSE (pas de requête) ├── marge 1h ──┤── requêtes normales ──
+   ── normal requests ──────┤── 1h margin ──┤ PAUSE (no request) ├── 1h margin ──┤── normal requests ──
                                             │                       │
-                                     coucher + 1h              lever - 1h
+                                     sunset + 1h              sunrise - 1h
 ```
 
-Concrètement : si le soleil se couche à 20h00, l'intégration continue d'interroger l'onduleur jusqu'à 21h00, puis se met en pause. Si le lever est à 07h00 le lendemain, elle reprend dès 06h00 — pour ne pas rater un onduleur qui démarrerait un peu plus tôt ou plus tard que prévu (nuages, saison, décalage de l'horloge interne de l'onduleur, etc.).
+Concretely: if the sun sets at 8:00 PM, the integration keeps polling the inverter until 9:00 PM, then pauses. If sunrise is at 7:00 AM the next day, it resumes at 6:00 AM — so as not to miss an inverter that starts up a bit earlier or later than expected (clouds, season, the inverter's internal clock drifting, etc.).
 
-**Si l'entité `sun.sun` n'existe pas** (composant Soleil désactivé ou supprimé manuellement) : la pause nocturne se désactive automatiquement et silencieusement — l'intégration interroge normalement à **chaque** cycle de poll, jour et nuit, exactement comme avant l'ajout de cette fonctionnalité. Aucune configuration n'est nécessaire pour ce cas, aucune erreur n'est levée.
+**If the `sun.sun` entity doesn't exist** (Sun component disabled or manually removed): the night pause disables itself automatically and silently — the integration polls normally on **every** cycle, day and night, exactly as before this feature was added. No configuration is needed for this case, and no error is raised.
 
-**Effet sur les capteurs pendant la pause** : identique à une erreur réseau classique — mesures instantanées (puissance, tension, courant, fréquence, température) à `0`, `mode` à "Inconnu", `prod_auj`/`prod_total` conservent leur dernière valeur connue (voir section suivante). Le capteur `binary_sensor.online` passe à `Off`.
+**Effect on sensors during the pause**: same as a regular network error — instantaneous readings (power, voltage, current, frequency, temperature) go to `0`, `mode` shows "Unknown", `prod_auj`/`prod_total` keep their last known value (see next section). The `binary_sensor.online` sensor turns `Off`.
 
-Cette pause n'est pas configurable pour l'instant (pas de bascule marche/arrêt ni de réglage de marge dans l'UI) — si besoin, ouvrez une issue sur le repo.
+This pause isn't configurable yet (no on/off toggle or margin setting in the UI) — open an issue on the repo if you need one.
 
-### Entités DIAGNOSTIC
+### DIAGNOSTIC entities
 
-Les entités suivantes sont masquées par défaut (onglet Avancé) :
-- État du mode
-- Adresse IP
-- Numéro de série
-- Dernière mise à jour
+The following entities are hidden by default (Advanced tab):
+- Mode status
+- IP address
+- Serial number
+- Last update
 
-Pour les afficher : **Paramètres** > **Appareils et services** > Sélectionner le device > **Afficher les entités masquées**
+To show them: **Settings** > **Devices & services** > select the device > **Show disabled/hidden entities**
 
 
-### Les capteurs affichent "Inconnu"
+### Sensors show "Unknown"
 
-- Normal la nuit (pause nocturne automatique, voir plus haut) ou en cas d'erreur de requête ponctuelle — `mode` repasse à "Inconnu" jusqu'au prochain poll réussi
-- Vérifier que l'adresse IP est correcte
-- Vérifier que l'onduleur est **en ligne** et **alimenté**
-- Vérifier la **connectivité réseau** entre HA et l'onduleur
-- Augmenter l'`intervalle de scan` en cas de timeout réseau
+- Normal at night (automatic night pause, see above) or after a one-off request error — `mode` goes back to "Unknown" until the next successful poll
+- Check that the IP address is correct
+- Check that the inverter is **online** and **powered**
+- Check the **network connectivity** between HA and the inverter
+- Increase the `poll interval` if you're seeing network timeouts
 
-### L'intégration ne charge pas
+### The integration doesn't load
 
-- Vérifier les logs : **Paramètres** > **Système** > **Journaux**
-- Chercher les erreurs de connexion
-- Redémarrer Home Assistant
+- Check the logs: **Settings** > **System** > **Logs**
+- Look for connection errors
+- Restart Home Assistant
 
-### Le device n'affiche pas le modèle
+### The device doesn't show the model
 
-- Cela signifie que le modèle sélectionné n'est pas reconnu
-- Vérifier la sélection lors de la configuration
+- This means the selected model isn't recognized
+- Double-check the selection made during setup
 
 
 ## 📦 Versions
 
-- **v1.4.6** (2026-09-03) - `prod_auj` ne retombe plus à 0 en cours de journée même sur une lecture "réussie" : certains onduleurs SolaX renvoient un paquet valide avec le registre à 0 en quittant `normal_mode` (typiquement au crépuscule), ce qui était jusqu'ici accepté comme une vraie valeur et écrasait le total du jour avant minuit. `_apply_persistence()` ignore désormais toute baisse de `prod_auj` tant que la date n'a pas changé - seul un vrai changement de jour calendaire peut encore le remettre à 0. `prod_total` (compteur à vie) n'est pas concerné - cf. issue #16
+- **v1.4.6** (2026-09-03) - `prod_auj` no longer drops to 0 during the day even on a "successful" reading: some SolaX inverters return a valid packet with the register at 0 when leaving `normal_mode` (typically at dusk), which used to be accepted as a real value and overwrote the day's total before midnight. `_apply_persistence()` now ignores any decrease of `prod_auj` as long as the calendar date hasn't changed - only an actual day change can still reset it to 0. `prod_total` (lifetime counter) is not affected - see issue #16
 
 
-## 🙏 Remerciements
+## 🙏 Credits
 
-- https://github.com/CurlyMoo grace a son reverse ici : https://github.com/squishykid/solax/issues/191
+- https://github.com/CurlyMoo for the reverse-engineering work here: https://github.com/squishykid/solax/issues/191
