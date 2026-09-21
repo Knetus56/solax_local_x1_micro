@@ -42,6 +42,7 @@ A [Home Assistant](https://www.home-assistant.io/) integration to control and mo
 
 - **Binary Sensor**: online/offline status
 - **Switch**: turn the inverter on/off
+- **Number**: production ratio (0-100%) - read directly from the inverter at Home Assistant startup, on every inverter reconnection, and after every change
 
 ## 🔄 Services
 
@@ -185,7 +186,7 @@ To show them: **Settings** > **Devices & services** > select the device > **Show
 
 ## 📦 Versions
 
-- **v1.4.6** (2026-09-03) - `prod_auj` no longer drops to 0 during the day even on a "successful" reading: some SolaX inverters return a valid packet with the register at 0 when leaving `normal_mode` (typically at dusk), which used to be accepted as a real value and overwrote the day's total before midnight. `_apply_persistence()` now ignores any decrease of `prod_auj` as long as the calendar date hasn't changed - only an actual day change can still reset it to 0. `prod_total` (lifetime counter) is not affected - see issue #16
+- **v1.4.7** (2026-09-21) - New `number` entity to control the inverter's production ratio (0-100%) locally, without the SolaX app. Writing (`build_set_ratio_packet`) comes from the official app's JS; reading (`build_get_ratio_packet`) had no available documentation and was reverse-engineered empirically instead, by comparing responses before/after a known write to locate the register offset. Since the inverter doesn't expose this setting in its regular telemetry, the displayed value is confirmed with a real read at Home Assistant startup, on every inverter reconnection (morning restart after the overnight Wi-Fi shutdown), and 2s after every manual change; it resets to "unknown" at midnight so it never shows an unverified value overnight.
 
 
 ## 🙏 Credits

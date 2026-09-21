@@ -61,6 +61,9 @@
     },
     "switch": {
       "switch": { "name": "Status" }
+    },
+    "number": {
+      "power_ratio": { "name": "Productieratio" }
     }
   },
   "services": {

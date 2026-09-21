@@ -61,6 +61,9 @@
     },
     "switch": {
       "switch": { "name": "State" }
+    },
+    "number": {
+      "power_ratio": { "name": "Power ratio" }
     }
   },
   "services": {

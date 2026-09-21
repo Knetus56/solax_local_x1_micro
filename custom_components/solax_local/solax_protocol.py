@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import logging
+import os
 from typing import Any
 
 import aiohttp
@@ -34,6 +35,17 @@ def crc16(data: bytes, length: int) -> tuple[int, int]:
                 reg = (reg << 1) & mask
 
     return (reg >> 8) & 0xFF, reg & 0xFF
+
+
+def _fill_serial(buff: bytearray, inv: str, offset: int = 8, length: int = 14) -> None:
+    for index in range(length):
+        buff[offset + index] = ord(inv[index]) if index < len(inv) else 0x00
+
+
+def _finalize_packet(buff: bytearray) -> str:
+    """Append the CRC16 (over everything but the trailing 2 bytes) and base64-encode."""
+    buff[-2], buff[-1] = crc16(buff, len(buff) - 2)
+    return base64.b64encode(bytes(buff)).decode("ascii")
 
 
 def offline_state(host: str, serial: str) -> dict[str, Any]:
@@ -85,15 +97,8 @@ def build_sys_packet(inv: str, on: bool) -> str:
     buff[70] = 0x02
     buff[72] = 0x01 if on else 0x00
 
-    for index in range(14):
-        buff[8 + index] = ord(inv[index]) if index < len(inv) else 0x00
-
-    b1, b2 = crc16(buff, len(buff) - 2)
-    buff[74] = b1
-    buff[75] = b2
-
-    _LOGGER.debug("build_sys_packet: serial=%s on=%s crc=(%02X,%02X)", inv, on, b1, b2)
-    return base64.b64encode(bytes(buff)).decode("ascii")
+    _fill_serial(buff, inv)
+    return _finalize_packet(buff)
 
 
 def build_data_packet(inv: str) -> str:
@@ -108,15 +113,61 @@ def build_data_packet(inv: str) -> str:
     buff[7] = 0x1C
     buff[64] = 0x01
 
-    for index in range(14):
-        buff[8 + index] = ord(inv[index]) if index < len(inv) else 0x00
+    _fill_serial(buff, inv)
+    return _finalize_packet(buff)
 
-    b1, b2 = crc16(buff, len(buff) - 2)
-    buff[67] = b1
-    buff[68] = b2
 
-    _LOGGER.debug("build_data_packet: serial=%s crc=(%02X,%02X)", inv, b1, b2)
-    return base64.b64encode(bytes(buff)).decode("ascii")
+def _build_ratio_packet(inv: str, read: bool, ratio: int = 0) -> str:
+    # Shared envelope for build_set_ratio_packet/build_get_ratio_packet:
+    # category=2/deviceType=0x1C(28), register 3 ("powerRadio"), specific to
+    # the X1 Micro 2-in-1 - the only INVERTER_TYPE this integration
+    # supports. buff[64] is the only thing that turns this from a write
+    # into a read: 0x02=write (from the official app's JS), 0x01=read
+    # (confirmed empirically - see build_get_ratio_packet).
+    buff = bytearray(76)
+    buff[0] = 0x24
+    buff[1] = 0x24
+    buff[2] = 0x4C
+    buff[4] = 0x08
+    buff[5] = 0x03
+    buff[6] = 0x02
+    buff[7] = 0x1C
+    buff[29] = 0x04
+    buff[30:62] = os.urandom(32)
+    buff[62] = 0x0A
+    buff[64] = 0x01 if read else 0x02
+    buff[65] = 0x07
+    buff[67] = 0x01
+    buff[68] = 0x03
+    buff[70] = 0x02
+    buff[72] = ratio & 0xFF
+    buff[73] = (ratio >> 8) & 0xFF
+
+    _fill_serial(buff, inv)
+    return _finalize_packet(buff)
+
+
+def build_set_ratio_packet(inv: str, ratio: int) -> str:
+    # Distinct wire format from build_sys_packet: reverse-engineered straight
+    # from the official app's JS (groupPackaging), not the community-guessed
+    # on/off layout.
+    return _build_ratio_packet(inv, read=False, ratio=ratio)
+
+
+def build_get_ratio_packet(inv: str) -> str:
+    # Read counterpart to build_set_ratio_packet. Confirmed empirically
+    # against real hardware (not from the app's JS, unlike the write side):
+    # writing a new ratio via build_set_ratio_packet and then re-reading
+    # with this packet reflected the change at a fixed offset (76, u16 LE)
+    # in the 352-byte response, ruling out it being an echo of the
+    # request's own payload. register/value fields don't seem to affect
+    # the dump and are left at a harmless read (register 3, value 0).
+    return _build_ratio_packet(inv, read=True)
+
+
+# Offset of the powerRadio register (u16 LE) in the 352-byte response to
+# build_get_ratio_packet - see that function's docstring.
+_RATIO_OFFSET = 76
 
 
 def _u16(data: bytes, offset: int) -> int:
@@ -210,9 +261,8 @@ def parse_data(payload: str, host: str, serial: str) -> dict[str, Any]:
     return result
 
 
-async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial: str) -> dict[str, Any]:
-    payload = build_data_packet(serial)
-    _LOGGER.debug("fetch_inverter_state: querying host=%s serial=%s", host, serial)
+async def _post(session: aiohttp.ClientSession, host: str, payload: str, label: str) -> str | None:
+    """POST a base64 packet to the inverter; return the raw base64 response text, or None on failure."""
     try:
         async with session.post(
             f"http://{host}",
@@ -220,34 +270,51 @@ async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial
             headers={"Content-Type": "application/octet-stream"},
             timeout=_REQUEST_TIMEOUT,
         ) as response:
+            if response.status != 200:
+                _LOGGER.debug("%s: bad status %d", label, response.status)
+                return None
             raw = await response.read()
-            body = raw.decode("ascii", errors="ignore")
-            _LOGGER.debug("fetch_inverter_state: HTTP %d body_len=%d", response.status, len(body))
-            # Length is validated once, post-decode, in parse_data
-            # (_MIN_PAYLOAD_LENGTH) rather than approximated here on the
-            # base64 text - avoids two thresholds drifting out of sync.
-            if response.status == 200:
-                return parse_data(body.replace("\n", ""), host, serial)
-            _LOGGER.debug("fetch_inverter_state: bad status, marking offline")
+            body = raw.decode("ascii", errors="ignore").replace("\n", "")
+            _LOGGER.debug("%s: HTTP 200 body_len=%d", label, len(body))
+            return body
     except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
-        _LOGGER.debug("fetch_inverter_state: request failed: %s", exc)
+        _LOGGER.debug("%s: request failed: %s", label, exc)
+        return None
 
-    return offline_state(host, serial)
+
+async def fetch_inverter_state(session: aiohttp.ClientSession, host: str, serial: str) -> dict[str, Any]:
+    _LOGGER.debug("fetch_inverter_state: querying host=%s serial=%s", host, serial)
+    body = await _post(session, host, build_data_packet(serial), "fetch_inverter_state")
+    if body is None:
+        return offline_state(host, serial)
+    return parse_data(body, host, serial)
 
 
 async def set_inverter_state(session: aiohttp.ClientSession, host: str, serial: str, on: bool) -> bool:
-    payload = build_sys_packet(serial, on)
     _LOGGER.debug("set_inverter_state: host=%s serial=%s on=%s", host, serial, on)
-    try:
-        async with session.post(
-            f"http://{host}",
-            data=payload.encode("ascii"),
-            headers={"Content-Type": "application/octet-stream"},
-            timeout=_REQUEST_TIMEOUT,
-        ) as response:
-            success = response.status == 200
-            _LOGGER.debug("set_inverter_state: HTTP %d success=%s", response.status, success)
-            return success
-    except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
-        _LOGGER.debug("set_inverter_state: request failed: %s", exc)
-        return False
+    body = await _post(session, host, build_sys_packet(serial, on), "set_inverter_state")
+    return body is not None
+
+
+async def fetch_power_ratio(session: aiohttp.ClientSession, host: str, serial: str) -> int | None:
+    _LOGGER.debug("fetch_power_ratio: querying host=%s serial=%s", host, serial)
+    body = await _post(session, host, build_get_ratio_packet(serial), "fetch_power_ratio")
+    if body is None:
+        return None
+    decoded = base64.b64decode(body)
+    if len(decoded) < _RATIO_OFFSET + 2:
+        _LOGGER.debug("fetch_power_ratio: response too short, no ratio field")
+        return None
+    serial_inverter = decoded[8:22].decode("ascii", errors="ignore")
+    if serial_inverter != serial:
+        _LOGGER.debug("fetch_power_ratio: serial mismatch (got %r)", serial_inverter)
+        return None
+    ratio = _u16(decoded, _RATIO_OFFSET)
+    _LOGGER.debug("fetch_power_ratio: ratio=%d", ratio)
+    return ratio
+
+
+async def set_power_ratio(session: aiohttp.ClientSession, host: str, serial: str, ratio: int) -> bool:
+    _LOGGER.debug("set_power_ratio: host=%s serial=%s ratio=%d", host, serial, ratio)
+    body = await _post(session, host, build_set_ratio_packet(serial, ratio), "set_power_ratio")
+    return body is not None

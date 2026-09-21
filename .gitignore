@@ -12,3 +12,6 @@ build/
 
 # Notes de session Claude, pas destinées au repo public
 CLAUDE.md
+
+# Clés d'accès MCP (Home Assistant prod/test) - jamais dans un repo public
+.mcp.json
