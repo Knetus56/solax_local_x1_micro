@@ -7,7 +7,7 @@ A [Home Assistant](https://www.home-assistant.io/) integration to control and mo
 ## 🌟 Features
 
 - 📊 **Real-time monitoring**: MPPT power, energy production, temperature
-- 🔄 **Inverter control**: turn on/off via a switch
+- 🔄 **Inverter control**: turn on/off via a switch, adjust the production ratio (0-100%) via a number entity
 - 📈 **Production tracking**: daily and cumulative production
 - 🕐 **History**: last-update timestamp
 - 🌍 **Multi-inverter support**: X1 Micro 2-in-1
